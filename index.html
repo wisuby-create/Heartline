@@ -3,125 +3,84 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Heartline — Romance Messenger</title>
+<title>Heartline — Romance Messenger (Demo)</title>
 <style>
   :root{
-    --bg: #0c0e16;
-    --panel:#101423;
-    --soft:#f8e8f0;
-    --pink:#f19bb8;
-    --pink2:#ee7aa7;
-    --pill:#ffd1df;
-    --ink:#1d2133;
+    --pink:#ff8fb5; --pink2:#ff6aa3; --ink:#1d2133;
     --meFrom:#5a6bf7; --meTo:#7f9bff;
-    --them:#ffffff; --bubble:#ffffff;
-    --shadow: 0 10px 30px rgba(0,0,0,.25);
-    --radius: 18px;
+    --shadow:0 10px 30px rgba(0,0,0,.25);
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
-  html,body{height:100%; margin:0; background:#0b0d15; color:#242424; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, "Noto Sans", "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";}
-  /* phone frame */
-  .app{
-    height:100dvh; max-width:430px; margin:0 auto; position:relative; background:linear-gradient(180deg,#0e1220 0%,#0e1220 100%);
-    display:flex; align-items:center; justify-content:center; overflow:hidden;
-  }
-  /* wallpaper */
-  .wall{
-    position:absolute; inset:0; background:
-      linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.35)),
-      url('assets/wallpapers/sakura-closeup.jpg') center/cover no-repeat;
-    filter: blur(8px) saturate(1.05);
-    transform: scale(1.06);
-  }
-  /* screens */
-  .screen{ position:absolute; inset:0; display:none; }
-  .screen.active{ display:block; }
-  .glass{ position:absolute; inset:12px; border-radius:24px; background:rgba(255,255,255,.78); backdrop-filter: blur(14px); box-shadow: var(--shadow); overflow:hidden; }
-  /* status bar */
-  .status{ position:absolute; top:6px; left:0; right:0; height:26px; display:flex; align-items:center; justify-content:space-between; color:#fff; padding:0 16px; font-weight:600; font-size:14px; z-index:2 }
-  .status .pill{ background:rgba(0,0,0,.35); padding:2px 10px; border-radius:999px; }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0;background:#0e1220;font-family:system-ui,Inter,Segoe UI,Roboto}
+  .app{height:100dvh;max-width:430px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:center}
+  .wall{position:absolute;inset:0;background:
+    linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.35)),
+    url('assets/wallpapers/sakura-closeup.jpg') center/cover no-repeat;
+    filter:blur(8px) saturate(1.05);transform:scale(1.06)}
+  .screen{position:absolute;inset:0;display:none}
+  .screen.active{display:block}
+  .glass{position:absolute;inset:12px;border-radius:24px;background:rgba(255,255,255,.78);backdrop-filter:blur(14px);box-shadow:var(--shadow);overflow:hidden}
+  .status{position:absolute;top:6px;left:0;right:0;height:26px;display:flex;align-items:center;justify-content:space-between;color:#fff;padding:0 16px;font-weight:700;font-size:14px;z-index:5}
+  .pill{background:rgba(0,0,0,.35);padding:2px 10px;border-radius:999px}
 
-  /* START screen */
-  .start-wrap{ position:absolute; inset:0; display:grid; place-items:center; padding:18px;}
-  .start-card{
-    width:100%; height:100%; border-radius:24px; overflow:hidden; box-shadow: var(--shadow); position:relative;
-    background: #f8d9e6 url('assets/logo-heartline.png') top 22px center / 60% auto no-repeat;
-  }
-  .start-illustration{
-    position:absolute; inset:0; background:
-      linear-gradient(180deg, rgba(255,255,255,.0) 0%, rgba(255,255,255,.15) 65%, rgba(255,255,255,.35) 100%),
-      url('assets/start/cover.jpg') center/cover no-repeat;
-    /* Jeśli nie masz cover.jpg, usuń to tło — przycisk nadal zadziała */
-  }
-  .start-btn{
-    position:absolute; left:50%; transform:translateX(-50%);
-    bottom:24px; padding:16px 28px; border-radius:999px; border:0; cursor:pointer;
-    background: linear-gradient(180deg, var(--pink) 0%, var(--pink2) 100%);
-    color:#fff; font-weight:800; font-size:22px; letter-spacing:.3px; box-shadow: var(--shadow);
-  }
+  /* START */
+  .start-wrap{position:absolute;inset:0;display:grid;place-items:center;padding:18px}
+  .start-card{width:100%;height:100%;border-radius:24px;overflow:hidden;box-shadow:var(--shadow);position:relative;background:#f8d9e6}
+  .logo{position:absolute;left:50%;transform:translateX(-50%);top:22px;width:60%;height:72px;background:url('assets/heartline_logo.png') center/contain no-repeat;filter:drop-shadow(0 2px 10px rgba(0,0,0,.18))}
+  .start-illustration{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.0) 0%, rgba(255,255,255,.15) 65%, rgba(255,255,255,.35) 100%),
+    url('assets/start/cover.jpg') center/cover no-repeat}
+  .start-btn{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;padding:16px 28px;border-radius:999px;border:0;cursor:pointer;
+    background:linear-gradient(180deg,var(--pink),var(--pink2));color:#fff;font-weight:800;font-size:22px;letter-spacing:.3px;box-shadow:var(--shadow)}
 
-  /* NAME dialog */
-  .name-modal{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(14,18,32,.55); z-index:20; }
-  .name-modal.show{ display:flex;}
-  .card{ width:92%; max-width:360px; border-radius:18px; background:#fff; box-shadow: var(--shadow); padding:18px; text-align:center;}
-  .face{ width:96px; height:96px; border-radius:50%; background:#eee url('assets/avatars/mc.png') center/cover no-repeat; margin: 6px auto 12px; }
-  .card h3{ margin:0 0 10px; font-size:20px; color:#222;}
-  .field{ display:flex; gap:10px; align-items:center; }
-  .field input{ flex:1; border:2px solid #eee; border-radius:12px; padding:12px 14px; font-size:16px;}
-  .btn{ padding:10px 16px; border-radius:12px; border:0; background:#111827; color:#fff; font-weight:700; }
-  .muted{ color:#777; font-size:12px; margin-top:8px; }
+  /* NAME */
+  .name-modal{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(14,18,32,.55);z-index:20}
+  .name-modal.show{display:flex}
+  .card{width:92%;max-width:360px;border-radius:18px;background:#fff;box-shadow:var(--shadow);padding:18px;text-align:center}
+  .face{width:96px;height:96px;border-radius:50%;background:#eee url('assets/avatars/mc.png') center/cover no-repeat;margin:6px auto 12px}
+  .field{display:flex;gap:10px;align-items:center}
+  .field input{flex:1;border:2px solid #eee;border-radius:12px;padding:12px 14px;font-size:16px}
+  .btn{padding:10px 16px;border-radius:12px;border:0;background:#111827;color:#fff;font-weight:800;cursor:pointer}
+  .muted{color:#777;font-size:12px;margin-top:8px}
 
-  /* PHONE HOME */
-  .home{ padding:18px; display:flex; flex-direction:column; gap:16px;}
-  .dock{ display:grid; grid-template-columns: repeat(4,1fr); gap:14px;}
-  .tile{
-    background:rgba(255,255,255,.95); border-radius:18px; padding:14px 10px; text-align:center; box-shadow:0 6px 18px rgba(0,0,0,.09);
-  }
-  .ico{ width:56px; height:56px; margin:0 auto 8px; border-radius:16px; display:grid; place-items:center; font-size:26px; color:#fff; }
-  .i-msg{ background:linear-gradient(180deg,#ff7bb2,#ff4f98); }
-  .i-phone{ background:linear-gradient(180deg,#50d890,#24b26a); }
-  .i-gallery{ background:linear-gradient(180deg,#8b9fff,#6c7cff); }
-  .i-clock{ background:linear-gradient(180deg,#ffc86a,#ff9d3f); }
-  .i-notes{ background:linear-gradient(180deg,#9ee1ff,#55c7f5); }
-  .i-settings{ background:linear-gradient(180deg,#c7b2ff,#a086ff); }
-  .badge{ position:absolute; margin-left:36px; margin-top:-6px; background:#ff3b62; color:#fff; border-radius:999px; padding:2px 6px; font-size:12px; font-weight:800; box-shadow:0 2px 8px rgba(0,0,0,.2); }
-  .toast{ background:#fff; border-radius:14px; padding:10px 12px; box-shadow: var(--shadow); }
+  /* HOME */
+  .home{padding:18px;display:flex;flex-direction:column;gap:16px}
+  .dock{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .tile{background:rgba(255,255,255,.95);border-radius:18px;padding:14px 10px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.09);position:relative}
+  .ico{width:56px;height:56px;margin:0 auto 8px;border-radius:16px;display:grid;place-items:center;font-size:26px;color:#fff}
+  .i-msg{background:linear-gradient(180deg,#ff7bb2,#ff4f98)}
+  .i-phone{background:linear-gradient(180deg,#50d890,#24b26a)}
+  .i-gallery{background:linear-gradient(180deg,#8b9fff,#6c7cff)}
+  .i-clock{background:linear-gradient(180deg,#ffc86a,#ff9d3f)}
+  .i-notes{background:linear-gradient(180deg,#9ee1ff,#55c7f5)}
+  .i-settings{background:linear-gradient(180deg,#c7b2ff,#a086ff)}
+  .badge{position:absolute;margin-left:36px;margin-top:-6px;background:#ff3b62;color:#fff;border-radius:999px;padding:2px 6px;font-size:12px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  .toast{background:#fff;border-radius:14px;padding:10px 12px;box-shadow:var(--shadow)}
 
-  /* MESSAGES list */
-  .messages{ padding:12px; display:flex; flex-direction:column; gap:10px;}
-  .msg-row{ background:#fff; border-radius:16px; padding:10px 12px; display:flex; align-items:center; gap:12px; box-shadow:0 6px 14px rgba(0,0,0,.08); }
-  .avatar{ width:46px; height:46px; border-radius:50%; background:#eee center/cover no-repeat; display:grid; place-items:center; font-weight:800; color:#fff; }
-  .a-maya{ background-image:url('assets/avatars/maya.png'); background-color:#f39bb1;}
-  .a-riven{ background-image:url('assets/avatars/riven.png'); background-color:#7a83ff;}
-  .a-noah{ background-image:url('assets/avatars/noah.png'); background-color:#7ed786;}
-  .a-victor{ background-image:url('assets/avatars/victor.png'); background-color:#b1b6ff;}
-  .who{ font-weight:800; color:#1d2133;}
-  .prev{ color:#5a617a; font-size:13px;}
+  /* LIST / CHAT */
+  .nav{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:rgba(255,255,255,.95);border-bottom:1px solid #eee}
+  .title{font-weight:800}
+  .messages{padding:12px;display:flex;flex-direction:column;gap:10px}
+  .msg-row{background:#fff;border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 6px 14px rgba(0,0,0,.08)}
+  .avatar{width:46px;height:46px;border-radius:50%;background:#eee center/cover no-repeat;display:grid;place-items:center;font-weight:800;color:#fff}
+  .a-maya{background-image:url('assets/avatars/maya.png');background-color:#f39bb1}
+  .a-riven{background-image:url('assets/avatars/riven.png');background-color:#7a83ff}
+  .a-noah{background-image:url('assets/avatars/noah.png');background-color:#7ed786}
+  .a-victor{background-image:url('assets/avatars/victor.png');background-color:#b1b6ff}
+  .who{font-weight:800;color:var(--ink)}
+  .prev{color:#5a617a;font-size:13px}
 
-  /* CHAT */
-  .nav{ height:54px; display:flex; align-items:center; justify-content:space-between; padding:0 12px; background:rgba(255,255,255,.95); border-bottom:1px solid #eee;}
-  .nav .title{ font-weight:800;}
-  .chat{ position:absolute; inset:54px 0 62px 0; overflow:auto; padding:14px; background:
-     linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.9));
-  }
-  .bubble{ max-width:78%; margin:10px 0; padding:11px 14px; border-radius:16px; background:#fff; box-shadow:0 6px 14px rgba(0,0,0,.06); }
-  .me{ margin-left:auto; background:linear-gradient(180deg,var(--meFrom),var(--meTo)); color:#fff;}
-  .from{ font-size:12px; font-weight:700; color:#7b84a2; margin-bottom:4px;}
-  .choices{ display:flex; flex-direction:column; gap:10px; margin-top:12px;}
-  .choice{ border:0; border-radius:999px; padding:12px 14px; background: linear-gradient(180deg,#ff8fb5,#ff6aa3); color:#fff; font-weight:800; }
-  .next{ position:absolute; left:12px; right:12px; bottom:8px; height:46px; border-radius:999px; background:#111827; color:#fff; border:0; font-weight:800; box-shadow: var(--shadow); }
-
-  /* top bar inside phone */
-  .phone-bar{ position:absolute; top:0; left:0; right:0; height:36px; display:flex; align-items:center; justify-content:space-between; padding:0 14px; color:#fff; font-weight:700;}
-  .phone-bar .chip{ background:rgba(0,0,0,.35); padding:4px 10px; border-radius:999px;}
-
-  /* helpers */
-  .hidden{ display:none !important;}
-  .tap{ cursor:pointer; }
+  .chat{position:absolute;inset:54px 0 62px 0;overflow:auto;padding:14px;background:linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.9))}
+  .bubble{max-width:78%;margin:10px 0;padding:11px 14px;border-radius:16px;background:#fff;box-shadow:0 6px 14px rgba(0,0,0,.06)}
+  .me{margin-left:auto;background:linear-gradient(180deg,var(--meFrom),var(--meTo));color:#fff}
+  .from{font-size:12px;font-weight:700;color:#7b84a2;margin-bottom:4px}
+  .choices{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+  .choice{border:0;border-radius:999px;padding:12px 14px;background:linear-gradient(180deg,var(--pink),var(--pink2));color:#fff;font-weight:800}
+  .next{position:absolute;left:12px;right:12px;bottom:8px;height:46px;border-radius:999px;background:#111827;color:#fff;border:0;font-weight:800;box-shadow:var(--shadow)}
+  .hidden{display:none!important}
 </style>
 </head>
 <body>
-<div class="app" id="app">
+<div class="app">
   <div class="wall"></div>
 
   <div class="status"><span class="pill" id="clock">--:--</span><span class="pill" id="datepill"></span><span class="pill">92%</span></div>
@@ -130,6 +89,7 @@
   <section class="screen active" id="start">
     <div class="start-wrap">
       <div class="start-card">
+        <div class="logo"></div>
         <div class="start-illustration"></div>
         <button class="start-btn" id="btnStart">Start</button>
       </div>
@@ -142,33 +102,33 @@
           <input id="playerName" maxlength="16" placeholder="Your name" />
           <button class="btn" id="okName">OK</button>
         </div>
-        <div class="muted">Your name will appear in English dialogues.</div>
+        <div class="muted">Your name will appear in dialogues.</div>
       </div>
     </div>
   </section>
 
-  <!-- PHONE HOME -->
+  <!-- HOME -->
   <section class="screen" id="home">
-    <div class="phone-bar"><span class="chip" id="barDate">Tue, 7 Oct</span><span class="chip">92%</span></div>
-    <div class="glass">
-      <div class="home">
-        <div class="dock">
-          <div class="tile tap" id="openMessages">
-            <div class="ico i-msg">💬</div>
-            <div style="position:relative;font-weight:800;">Messages <span class="badge hidden" id="badgeMsg">1</span></div>
-          </div>
-          <div class="tile"><div class="ico i-phone">📞</div><div style="font-weight:800;">Phone</div></div>
-          <div class="tile"><div class="ico i-gallery">🖼️</div><div style="font-weight:800;">Gallery</div></div>
-          <div class="tile"><div class="ico i-clock">⏰</div><div style="font-weight:800;">Clock</div></div>
-          <div class="tile"><div class="ico i-notes">📝</div><div style="font-weight:800;">Notes</div></div>
-          <div class="tile"><div class="ico i-settings">⚙️</div><div style="font-weight:800;">Settings</div></div>
-        </div>
-        <div class="toast" id="homeToast">New message from Maya 💬</div>
+    <div class="glass" style="padding:18px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;justify-content:space-between">
+        <div class="pill" id="barDate">—</div><div class="pill">92%</div>
       </div>
+      <div class="dock">
+        <div class="tile" id="openMessages">
+          <div class="ico i-msg">💬</div>
+          <div style="position:relative;font-weight:800;">Messages <span class="badge hidden" id="badgeMsg">1</span></div>
+        </div>
+        <div class="tile"><div class="ico i-phone">📞</div><div style="font-weight:800;">Phone</div></div>
+        <div class="tile"><div class="ico i-gallery">🖼️</div><div style="font-weight:800;">Gallery</div></div>
+        <div class="tile"><div class="ico i-clock">⏰</div><div style="font-weight:800;">Clock</div></div>
+        <div class="tile"><div class="ico i-notes">📝</div><div style="font-weight:800;">Notes</div></div>
+        <div class="tile"><div class="ico i-settings">⚙️</div><div style="font-weight:800;">Settings</div></div>
+      </div>
+      <div class="toast" id="homeToast">New message from Maya 💬</div>
     </div>
   </section>
 
-  <!-- MESSAGES LIST -->
+  <!-- INBOX -->
   <section class="screen" id="inbox">
     <div class="glass">
       <div class="nav">
@@ -176,9 +136,7 @@
         <div class="title">Messages</div>
         <div style="width:64px"></div>
       </div>
-      <div class="messages" id="threadList">
-        <!-- threads inserted by JS -->
-      </div>
+      <div class="messages" id="threadList"></div>
     </div>
   </section>
 
@@ -188,17 +146,16 @@
       <div class="nav">
         <button class="btn" id="backToInbox">◀</button>
         <div class="title" id="chatTitle">Chat</div>
-        <div class="avatar" id="chatAvatar" style="width:34px;height:34px;"></div>
+        <div class="avatar" id="chatAvatar" style="width:34px;height:34px"></div>
       </div>
       <div class="chat" id="chatScroll"></div>
       <button class="next" id="btnNext">Next ▶</button>
     </div>
   </section>
-
 </div>
 
 <script>
-/* ========== CLOCK / DATE ========== */
+/* ========= CLOCK ========= */
 function fmt2(n){return n.toString().padStart(2,'0')}
 function tick(){
   const d=new Date();
@@ -208,210 +165,252 @@ function tick(){
 }
 setInterval(tick,1000); tick();
 
-/* ========== SIMPLE STORE ========== */
-const SAVE_KEY='heartline-save';
+/* ========= STATE ========= */
+const SAVE_KEY='heartline-save-v2';
+const $ = s => document.querySelector(s);
+const screens = { start:$('#start'), home:$('#home'), inbox:$('#inbox'), chat:$('#chat') };
+function show(id){ Object.keys(screens).forEach(k=>screens[k].classList.toggle('active', k===id)); }
 let ST = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
-ST.playerName ??= ''; ST.flags ??= {}; ST.threads ??= {}; ST.queue ??= [];
+ST.playerName ??= ''; ST.flags ??= {}; ST.threads ??= { maya:[], riven:[], noah:[], victor:[] }; ST.queue ??= [];
 function save(){ localStorage.setItem(SAVE_KEY, JSON.stringify(ST)); }
 
-/* ========== NAV HELPERS ========== */
-const screens = {start:qs('#start'), home:qs('#home'), inbox:qs('#inbox'), chat:qs('#chat')};
-function show(id){ for(const k in screens){ screens[k].classList.toggle('active', k===id); } }
-function qs(sel, root=document){ return root.querySelector(sel); }
-function el(tag, cls, txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt) e.textContent=txt; return e; }
-
-/* ========== START FLOW ========== */
-qs('#btnStart').addEventListener('click', ()=>{ qs('#nameModal').classList.add('show'); qs('#playerName').focus(); });
-qs('#okName').addEventListener('click', ()=>{
-  const v = qs('#playerName').value.trim() || 'You';
+/* ========= START FLOW ========= */
+$('#btnStart').addEventListener('click', ()=> $('#nameModal').classList.add('show'));
+$('#okName').addEventListener('click', ()=>{
+  const v = ($('#playerName').value||'You').trim();
   ST.playerName = v; save();
-  bootIfFirstTime();
+  bootFirst();
   openHome();
 });
-
-function bootIfFirstTime(){
-  if(!ST.flags.booted){
-    // initial inbox: only Maya unlocked
-    ST.flags.booted = true;
-    ST.flags.mayaUnlocked = true;
-    ST.flags.rivenUnlocked = false;
-    ST.flags.noahUnlocked = false;
-    ST.flags.victorUnlocked = false;
-
-    ST.queue.push({from:'Maya', preview:"Hey! Guess who texted me last night? 👀", id:'maya_intro'});
-    save();
-  }
+function bootFirst(){
+  if(ST.flags.booted) return;
+  ST.flags.booted = true;
+  ST.flags.maya = true;
+  ST.flags.riven = false;
+  ST.flags.noah = false;
+  ST.flags.victor = false;
+  // pierwsze powiadomienie Mayi
+  enqueuePreview('maya', "Hey! Guess who texted me last night? 👀");
+  save();
 }
 
-/* ========== HOME ========== */
+/* ========= HOME ========= */
 function openHome(){
   show('home');
-  // badge + toast
-  const hasQueue = ST.queue.length>0;
-  qs('#badgeMsg').classList.toggle('hidden', !hasQueue);
-  qs('#homeToast').style.display = hasQueue ? 'block' : 'none';
+  updateHomeIndicators();
 }
-qs('#openMessages').addEventListener('click', openInbox);
-qs('#backToHome').addEventListener('click', openHome);
+function updateHomeIndicators(){
+  const hasQueue = ST.queue.length>0;
+  $('#badgeMsg').classList.toggle('hidden', !hasQueue);
+  $('#homeToast').style.display = hasQueue ? 'block' : 'none';
+  if(hasQueue){
+    const last = ST.queue[ST.queue.length-1];
+    $('#homeToast').textContent = `New message from ${cap(last.contact)} 💬`;
+  }
+}
+$('#openMessages').addEventListener('click', openInbox);
+$('#backToHome').addEventListener('click', openHome);
 
+/* ========= INBOX ========= */
+const CONTACTS = [
+  {id:'maya',   name:'Maya',   avatar:'a-maya',   flag:'maya'},
+  {id:'riven',  name:'Riven',  avatar:'a-riven',  flag:'riven'},
+  {id:'noah',   name:'Noah',   avatar:'a-noah',   flag:'noah'},
+  {id:'victor', name:'Victor', avatar:'a-victor', flag:'victor'}
+];
 function openInbox(){
   show('inbox');
   renderThreads();
+  // po wejściu do Messages czyścimy kolejkę badge/toast
+  ST.queue = []; save(); updateHomeIndicators();
 }
-
-/* ========== THREADS LIST ========== */
-const contacts = [
-  {id:'Maya', name:'Maya', avatar:'a-maya', enabledFlag:'mayaUnlocked'},
-  {id:'Riven', name:'Riven', avatar:'a-riven', enabledFlag:'rivenUnlocked'},
-  {id:'Noah', name:'Noah', avatar:'a-noah', enabledFlag:'noahUnlocked'},
-  {id:'Victor', name:'Victor', avatar:'a-victor', enabledFlag:'victorUnlocked'}
-];
-
 function renderThreads(){
-  const box=qs('#threadList'); box.innerHTML='';
-  const q = ST.queue[0];
-  if(q){ // mark preview on the row
-    ST.threads[q.id] ||= [];
-  }
-  contacts.forEach(c=>{
-    const enabled = !!ST.flags[c.enabledFlag];
-    const row = el('div','msg-row tap'); row.style.opacity = enabled?1:.45; if(!enabled){ row.style.pointerEvents='none'; }
-    const av = el('div','avatar '+c.avatar); av.textContent = enabled?'':c.name[0];
-    const info = el('div'); const who = el('div','who',c.name);
-    const preview = el('div','prev', getLastPreview(c.id) || (enabled?'Tap to open':'Locked') );
-    info.append(who,preview);
-    row.append(av,info);
+  const box = $('#threadList'); box.innerHTML='';
+  CONTACTS.forEach(c=>{
+    const enabled = !!ST.flags[c.flag];
+    const row = document.createElement('div'); row.className='msg-row'; if(!enabled){ row.style.opacity=.45; row.style.pointerEvents='none'; }
+    const av = document.createElement('div'); av.className='avatar ' + c.avatar; av.textContent = enabled?'':c.name[0];
+    const info = document.createElement('div');
+    const who = document.createElement('div'); who.className='who'; who.textContent = c.name;
+    const prev = document.createElement('div'); prev.className='prev'; prev.textContent = getPreview(c.id, enabled);
+    info.append(who, prev);
+    row.append(av, info);
     row.addEventListener('click', ()=> openChat(c.id));
     box.append(row);
   });
-  // clear badge + toast after visiting messages
-  ST.queue.length = 0; save();
-  qs('#badgeMsg').classList.add('hidden'); qs('#homeToast').style.display='none';
 }
-
-function getLastPreview(contactId){
-  const t = ST.threads[contactId]; if(!t || t.length===0) return '';
+function getPreview(id, enabled){
+  if(!enabled) return 'Locked';
+  const t = ST.threads[id]; if(!t || t.length===0) return 'Tap to open';
   const last = t[t.length-1];
-  if(last.choices) return last.choices.map(ch=>ch.text).join(' / ');
+  if(last.choices) return last.choices.map(x=>x.text).join(' / ');
   return last.text || '';
 }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 
-/* ========== CHAT ENGINE (very small VN) ========== */
-let CHAT = null, cursor=0, currentContact=null, lockChoices=false;
+/* ========= CHAT ENGINE ========= */
+let current=''; let cursor=0; let lockChoices=false;
 
 const SCENES = {
-  Maya: [
-    { from:'Maya', text:"Hey! Guess who texted me last night? 👀"},
+  // SCENA 1: MAYA intro
+  maya_s1: [
+    { from:'maya', text:"Hey! Guess who texted me last night? 👀" },
     { choices:[
-      { id:'m1', text:"Tell me already!", effect:()=>{} },
-      { id:'m2', text:"Let me guess… Riven?", effect:()=>{} },
-      { id:'m3', text:"You’re glowing, Maya 😏", effect:()=>{} },
+      { text:"Tell me already!", next:2 },
+      { text:"Let me guess… Riven?", next:2 },
+      { text:"You're glowing, Maya 😏", next:2 },
     ]},
-    { from:'Maya', text:"Riven."},
-    { from:'Maya', text:`He asked if I'm still in town. Should I answer?`},
+    { from:'maya', text:"Riven." },
+    { from:'maya', text:"He asked if I'm still in town. Should I answer?" },
     { choices:[
-      { id:'m4', text:"Your call. But be careful.", effect:()=>{} },
-      { id:'m5', text:"Ignore him.", effect:()=>{} },
-      { id:'m6', text:"Ask why now.", effect:()=>{} },
+      { text:"Your call. But be careful.", next:5 },
+      { text:"Ignore him.", next:5 },
+      { text:"Ask why now.", next:5 },
     ]},
-    { from:'Maya', text:"...I did. And he asked about you."},
-    { from:'Maya', text:`I'll tell him you’re around. Brace yourself.`},
-    { sys: ()=> { ST.flags.rivenUnlocked = true; save(); } },
-    { sys: ()=> enqueuePreview('Riven',"…Are you there?") },
-    { from:'Maya', text:"Okay, I have class — text me later!"}
+    { from:'maya', text:"...I did. And he asked about you." },
+    { from:'maya', text:"I'll tell him you're around. Brace yourself." },
+    { sys: ()=> { ST.flags.riven = true; save(); } },
+    { sys: ()=> enqueuePreview('riven', "…Are you there?") },
+    { from:'maya', text:"Okay, I have class — text me later!" },
   ],
-
-  Riven: [
-    { from:'Riven', text:"…Are you there?" },
-    { from:'Riven', text:"Maya said you’re still in town." },
-    { from:'Riven', text:"Do you ever think about… that night?" },
-    { me:true, text:"(Don’t reply)" , key:'silent' },
+  // Riven (część sceny 1)
+  riven_s1: [
+    { from:'riven', text:"…Are you there?" },
+    { from:'riven', text:"Maya said you're still in town." },
+    { from:'riven', text:"Do you ever think about… that night?" },
     { choices:[
-      { id:'r1', text:"I don't sleep much lately.", effect:()=>{} },
-      { id:'r2', text:"It was a mistake.", effect:()=>{} },
-      { id:'r3', text:"Why text me now?", effect:()=>{} },
+      { text:"I don't sleep much lately.", next:4 },
+      { text:"It was a mistake.", next:4 },
+      { text:"Why text me now?", next:4 },
     ]},
-    { from:'Riven', text:"Figures. You used to text me at 2AM just to send memes." },
-    { from:'Riven', text:"If you want answers, meet me at the riverside tonight." },
-    { sys: ()=> { ST.flags.ch1_s1_done=true; save();
-        enqueuePreview('Maya',"Okay, listen… I think he’s hiding something."); } }
+    { from:'riven', text:"Figures. You used to text me at 2AM just to send memes." },
+    { from:'riven', text:"If you want answers, meet me at the riverside tonight." },
+    // 🔧 KONIEC S1: wymuś nową wiadomość od Mayi (SCENA 2) i pokaż badge/toast od razu
+    { sys: ()=> { ST.flags.ch1_s1_done = true; save(); } },
+    { sys: ()=> enqueuePreview('maya', "Okay, listen… I think he's hiding something.") },
   ],
+  // SCENA 2: MAYA follow-up → odblokowuje Noaha
+  maya_s2: [
+    { from:'maya', text:"Hey. I need to tell you something." },
+    { from:'maya', text:"Riven wasn't the only one who asked about you." },
+    { from:'maya', text:"Noah did, too. He said he missed your coffee talks." },
+    { choices:[
+      { text:"I missed them too.", next:4 },
+      { text:"I don't know what I want.", next:4 },
+      { text:"He was always kind.", next:4 },
+    ]},
+    { from:'maya', text:"I'll send him your number again, okay?" },
+    { sys: ()=> { ST.flags.noah = true; save(); } },
+    { sys: ()=> enqueuePreview('noah', "Hey! It’s been ages!") },
+    { from:'maya', text:"Be nice to him. He’s sunshine, you know?" },
+    { sys: ()=> { ST.flags.ch1_s2_done = true; save(); } },
+  ],
+  // „idle” (gdy scena 1 i 2 już są zrobione)
+  maya_idle: [
+    { from:'maya', text:"Drink water, bestie. And text me later. 🌸" }
+  ],
+  noah_s1: [
+    { from:'noah', text:"Hey! It's been ages!" },
+    { from:'noah', text:"Maya told me you're back. Coffee?" }
+  ]
 };
 
-function openChat(contactId){
-  currentContact = contactId;
-  qs('#chatTitle').textContent = contactId;
-  const av = qs('#chatAvatar'); av.className = 'avatar a-'+contactId.toLowerCase();
-  show('chat');
-  // load script
-  CHAT = SCENES[contactId] || [];
-  cursor = 0; qs('#chatScroll').innerHTML='';
-  lockChoices=false;
-  paintNext(); // render first node
+function selectScript(id){
+  if(id==='maya'){
+    if(!ST.flags.ch1_s1_done) return SCENES.maya_s1;
+    if(ST.flags.ch1_s1_done && !ST.flags.ch1_s2_done) return SCENES.maya_s2;
+    return SCENES.maya_idle;
+  }
+  if(id==='riven') return SCENES.riven_s1;
+  if(id==='noah')  return SCENES.noah_s1;
+  return [];
 }
 
-function appendBubble({from, text, me}){
-  const sc=qs('#chatScroll');
-  const b = el('div','bubble'+(me?' me':'')); 
-  if(from && !me){ const f=el('div','from',from); b.append(f); }
-  b.append( el('div',null,text) );
-  sc.append(b);
-  sc.scrollTop = sc.scrollHeight;
-  // save preview
-  ST.threads[currentContact] ||= [];
-  ST.threads[currentContact].push({from, text, me}); save();
+function openChat(id){
+  current = id; cursor = 0; lockChoices=false;
+  show('chat');
+  document.getElementById('chatTitle').textContent = cap(id);
+  const av = document.getElementById('chatAvatar');
+  av.className = 'avatar a-' + id;
+
+  const sc = document.getElementById('chatScroll');
+  sc.innerHTML='';
+  // odtwórz historię
+  (ST.threads[id]||[]).forEach(m => appendBubble(m));
+  // i kontynuuj scenę
+  paintNext();
+  document.getElementById('backToInbox').onclick = ()=> { show('inbox'); renderThreads(); };
+}
+
+function appendBubble(msg){
+  const sc = document.getElementById('chatScroll');
+  const b = document.createElement('div'); b.className = 'bubble' + (msg.me?' me':'');
+  if(!msg.me && msg.from){ const f=document.createElement('div'); f.className='from'; f.textContent = cap(msg.from); b.append(f); }
+  const t = document.createElement('div'); t.textContent = msg.text; b.append(t);
+  sc.append(b); sc.scrollTop = sc.scrollHeight;
+}
+
+function pushHistory(part){
+  ST.threads[current] ||= [];
+  ST.threads[current].push(part);
+  save();
+}
+
+function clearChoiceWidgets(){
+  document.querySelectorAll('.choices').forEach(n=>n.remove());
 }
 
 function paintNext(){
-  if(cursor>=CHAT.length){ return; }
-  const node = CHAT[cursor++];
-  if(node.sys){ node.sys(); return paintNext(); }
+  clearChoiceWidgets();
+  const script = selectScript(current);
+  if(cursor>=script.length){ document.getElementById('btnNext').disabled=true; return; }
+  const node = script[cursor++];
+
+  // system step
+  if(node.sys){ node.sys(); updateHomeIndicators(); return paintNext(); }
+
+  // choices
   if(node.choices){
-    // render choices
-    const wrap = el('div','choices');
+    const wrap = document.createElement('div'); wrap.className='choices';
     node.choices.forEach(ch=>{
-      const btn = el('button','choice', ch.text);
-      btn.addEventListener('click', ()=>{
+      const btn = document.createElement('button'); btn.className='choice'; btn.textContent = ch.text;
+      btn.onclick = ()=>{
         if(lockChoices) return; lockChoices=true;
-        appendBubble({me:true, text: ch.text});
-        ch.effect?.(); lockChoices=false; paintNext();
-      });
+        const meMsg = { me:true, text: ch.text };
+        pushHistory(meMsg); appendBubble(meMsg);
+        if(typeof ch.next === 'number') cursor = ch.next;
+        lockChoices=false; paintNext();
+      };
       wrap.append(btn);
     });
-    qs('#chatScroll').append(wrap);
-    qs('#chatScroll').scrollTop = qs('#chatScroll').scrollHeight;
-    qs('#btnNext').disabled=true;
-    // also save to history (stores the options shown)
-    ST.threads[currentContact] ||= []; ST.threads[currentContact].push({choices: node.choices}); save();
-  }else{
-    const who = node.me ? ST.playerName || 'You' : currentContact;
-    appendBubble({from: node.me?null:who, text: node.text, me: !!node.me});
-    qs('#btnNext').disabled=false;
+    document.getElementById('chatScroll').append(wrap);
+    document.getElementById('btnNext').disabled=true;
+    // zapisz fakt pokazania wyborów (dla podglądu w inboxie)
+    pushHistory({ choices: node.choices });
+    return;
   }
+
+  // normal line
+  const line = { from: node.from, text: node.text, me: !!node.me };
+  pushHistory(line); appendBubble(line);
+  document.getElementById('btnNext').disabled=false;
 }
 
-qs('#btnNext').addEventListener('click', paintNext);
-qs('#backToInbox').addEventListener('click', ()=>{ show('inbox'); renderThreads(); });
+document.getElementById('btnNext').addEventListener('click', paintNext);
 
-/* ========== INBOX PREVIEW QUEUE ========== */
-function enqueuePreview(from, preview){
-  ST.queue.push({from, preview, id: from}); save();
-  // If user is on home, update badge/toast:
-  if(screens.home.classList.contains('active')){
-    qs('#badgeMsg').classList.remove('hidden');
-    qs('#homeToast').style.display='block';
-    qs('#homeToast').textContent = `New message from ${from} 💬`;
-  }
+/* ========= PREVIEWS / BADGE ========= */
+function enqueuePreview(contactId, preview){
+  // kontaktId: 'maya' | 'riven' | 'noah' | 'victor'
+  ST.queue.push({ contact: contactId, preview }); save();
+  // natychmiast pokaż toast/badge jeśli user jest na HOME
+  if(screens.home.classList.contains('active')) updateHomeIndicators();
 }
 
-/* ========== INITIAL BOOT ========== */
+/* ========= INIT ========= */
 (function init(){
-  if(!ST.flags || !ST.flags.booted){
-    show('start');
-  }else{
-    // already booted: skip name modal and go home
-    openHome();
-  }
+  // od razu pokazuj START (żeby nie „znikał”)
+  Object.values(screens).forEach(s=>s.classList.remove('active'));
+  screens.start.classList.add('active');
 })();
 </script>
 </body>
