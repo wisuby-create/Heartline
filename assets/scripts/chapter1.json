@@ -307,3 +307,18 @@
     }
   }
 }
+// stan gry
+const STORAGE_KEY = 'heartline-save';
+let ST = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+ST.flags ||= {};
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(ST)); }
+
+// odblokowanie sceny i wysłanie powiadomienia
+function completeScene(id, nextInboxItem){
+  ST.flags[id] = true;
+  save();
+  if(nextInboxItem){
+    // pokaż na ekranie telefonu zapowiedź nowej wiadomości
+    window.enqueueInbox?.(nextInboxItem); // jeśli masz taką funkcję
+  }
+}
