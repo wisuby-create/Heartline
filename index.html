@@ -4,62 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Heartline</title>
-<link rel="icon" href="assets/heartline_logo.png">
 <style>
   body {
     margin: 0;
-    background: url('assets/sakura_anime_closeup.png') no-repeat center/cover;
-    backdrop-filter: blur(5px);
-    font-family: 'Poppins', sans-serif;
-    height: 100vh;
+    font-family: "Poppins", sans-serif;
+    background: #f8f5fa;
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 100vh;
   }
   #game {
     width: 360px;
     height: 640px;
-    background: rgba(255,255,255,0.9);
-    border-radius: 25px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    background: white;
+    border-radius: 30px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.2);
     overflow: hidden;
     position: relative;
-  }
-  #chat {
-    padding: 15px;
-    height: 85%;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
   }
-  .msg {
-    margin: 6px 0;
-    max-width: 80%;
-    padding: 10px 14px;
-    border-radius: 15px;
-    line-height: 1.3em;
-  }
-  .msg.them {
-    align-self: flex-start;
-    background: #f0f0f0;
-  }
-  .msg.me {
-    align-self: flex-end;
-    background: #cde6ff;
-  }
-  .choices button {
-    display: block;
-    margin: 6px auto;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 12px;
-    background: #ff91c7;
-    color: white;
-    font-weight: bold;
-  }
-  #start {
+  #start, #nameScreen, #phone, #chat {
     width: 100%;
     height: 100%;
+    position: absolute;
+    top: 0; left: 0;
+  }
+  #start {
     background: url('assets/start_screen.png') no-repeat center/cover;
     display: flex;
     flex-direction: column;
@@ -67,21 +39,87 @@
     align-items: center;
   }
   #start button {
-    margin-bottom: 50px;
-    font-size: 20px;
-    background: #ff91c7;
-    color: white;
+    margin-bottom: 60px;
+    background: #ff8fcf;
     border: none;
     border-radius: 20px;
-    padding: 10px 30px;
+    padding: 12px 36px;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
   }
-  #inputName {
-    width: 90%;
-    border: 2px solid #ff91c7;
-    border-radius: 15px;
-    padding: 8px;
-    margin-top: 10px;
+  #nameScreen {
+    background: url('assets/sakura_anime_closeup.png') no-repeat center/cover;
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+  }
+  #nameScreen img {
+    width: 200px; border-radius: 20px; margin-bottom: 20px;
+  }
+  #nameScreen input {
+    padding: 10px;
+    border-radius: 12px;
+    border: 2px solid #ff8fcf;
     font-size: 16px;
+    text-align: center;
+  }
+  #nameScreen button {
+    margin-top: 15px;
+    background: #ff8fcf;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 20px;
+    color: white;
+  }
+  #phone {
+    background: url('assets/sakura_anime_closeup.png') no-repeat center/cover;
+    display: flex;
+    flex-direction: column;
+  }
+  #apps {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    grid-gap: 20px;
+    margin: auto;
+    text-align: center;
+  }
+  .app {
+    background: rgba(255,255,255,0.7);
+    padding: 10px;
+    border-radius: 20px;
+    font-weight: bold;
+    color: #444;
+  }
+  #notif {
+    text-align: center;
+    font-size: 14px;
+    padding: 10px;
+    background: rgba(255,255,255,0.7);
+    border-top: 1px solid #eee;
+  }
+  #chat {
+    background: white;
+    display: flex;
+    flex-direction: column;
+  }
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+  }
+  .msg { max-width: 75%; margin: 8px 0; padding: 10px 14px; border-radius: 15px; }
+  .them { background: #f0f0f0; align-self: flex-start; }
+  .me { background: #d1eaff; align-self: flex-end; }
+  .choices { padding: 10px; }
+  .choices button {
+    display: block; margin: 6px auto;
+    background: #ff8fcf; color: white;
+    border: none; border-radius: 12px;
+    padding: 8px 16px;
   }
 </style>
 </head>
@@ -91,125 +129,119 @@
   <div id="start">
     <button onclick="showName()">Start 💬</button>
   </div>
+
+  <div id="nameScreen" style="display:none;">
+    <img src="assets/icons/icon_mc.png" alt="Main Character">
+    <h3>Enter your name</h3>
+    <input id="playerName" placeholder="Your name...">
+    <button onclick="beginGame()">Continue ➤</button>
+  </div>
+
+  <div id="phone" style="display:none;">
+    <div id="apps">
+      <div class="app" onclick="openMessages()">Messages</div>
+      <div class="app">Gallery</div>
+      <div class="app">Settings</div>
+    </div>
+    <div id="notif">📱 Waiting for messages...</div>
+  </div>
+
+  <div id="chat" style="display:none;">
+    <div id="messages"></div>
+  </div>
 </div>
 
-<audio id="notif" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_64a8e0e3ce.mp3?filename=notification-113724.mp3"></audio>
-<audio id="music" src="https://cdn.pixabay.com/download/audio/2023/01/24/audio_1f6b665fa1.mp3?filename=lofi-study-126566.mp3" loop></audio>
+<audio id="notifSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_64a8e0e3ce.mp3?filename=notification-113724.mp3"></audio>
+<audio id="bgm" src="https://cdn.pixabay.com/download/audio/2023/01/24/audio_1f6b665fa1.mp3?filename=lofi-study-126566.mp3" loop></audio>
 
 <script>
+// --- GLOBALS ---
 let playerName = "";
-let gameDiv = document.getElementById("game");
-let notif = document.getElementById("notif");
-let music = document.getElementById("music");
+let bgm = document.getElementById("bgm");
+let notifSound = document.getElementById("notifSound");
+let currentScene = 0;
 
-function showName(){
-  gameDiv.innerHTML = `
-  <div style="text-align:center; margin-top:200px;">
-    <h2>Enter your name:</h2>
-    <input id="inputName" placeholder="Your name...">
-    <br><br>
-    <button onclick="startGame()">Continue ➤</button>
-  </div>`;
-}
-
-function startGame(){
-  playerName = document.getElementById("inputName").value || "You";
-  music.volume = 0.3;
-  music.play();
-  startChat();
-}
-
-const script = [
-  {from:"Maja", text:"Hey! Guess who texted me last night? 👀"},
-  {choices:[
+// --- STORY SCRIPT ---
+const story = [
+  { from:"Maya", text:"Hey! Guess who texted me last night? 👀", choices:[
     {text:"Tell me already!", next:1},
-    {text:"Let me guess… Riven?", next:2},
-    {text:"You’re glowing, Maja 😏", next:3}
+    {text:"Let me guess… Riven?", next:1},
+    {text:"You’re glowing, Maya 😏", next:1}
   ]},
-  {from:"Maja", text:"Yeah... it was Riven. Can you believe that?"},
-  {from:"Maja", text:"He asked about you, actually."},
-  {from:"Maja", text:"Said he saw you around town again."},
-  {choices:[
-    {text:"What did you tell him?", next:4},
-    {text:"I don’t want to talk about him.", next:5}
+  { from:"Riven", text:"Maya said you’re still in town. ...Do you ever think about that night?", choices:[
+    {text:"Sometimes. I try not to.", next:2},
+    {text:"Of course I do.", next:2},
+    {text:"You shouldn’t text me.", next:2}
   ]},
-  {from:"Maja", text:"Just that you’re back. I didn’t say more!"},
-  {from:"Maja", text:"Anyway... he might text you."},
-  {from:"Riven", text:"Hey. Long time no see."},
-  {choices:[
-    {text:"Hey...", next:6},
-    {text:"What do you want, Riven?", next:7}
-  ]},
-  {from:"Riven", text:"Do you ever think about… that night?"},
-  {from:"Riven", text:"I probably deserve the silence."},
-  {from:"Riven", text:"Maya said you’re still in town."},
-  {from:"Noah", text:"Hi! Are you going to the coffee shop later? ☕"},
-  {choices:[
-    {text:"Maybe. Why?", next:8},
-    {text:"If you’re buying, I’m coming 😄", next:9}
-  ]},
-  {from:"Victor", text:"Good evening. I sent you the documents you asked for."},
-  {from:"Victor", text:"You seem... distracted lately. Everything alright?"}
+  { from:"Maya", text:"Sooo… Riven texted you, huh?", next:3 },
+  { from:"Noah", text:"Hey! It’s been ages! Wanna grab a coffee later?", next:4 },
+  { from:"Victor", text:"Good afternoon. I believe we’ve met — briefly, at Maya’s party last year.", next:5 },
+  { from:"Maya", text:"Sooo… looks like everyone’s talking to you again 👀", next:6 },
+  { from:"System", text:"Chapter 1 Complete — ‘The Message’", next:null }
 ];
 
-let step = 0;
-let lock = false;
-
-function startChat(){
-  gameDiv.innerHTML = `<div id="chat"></div>`;
-  addMessage(script[0]);
+// --- FUNCTIONS ---
+function showName() {
+  document.getElementById("start").style.display = "none";
+  document.getElementById("nameScreen").style.display = "flex";
 }
 
-function addMessage(obj){
-  const chat = document.getElementById("chat");
-  if(obj.from){
-    notif.play();
-    const bubble = document.createElement("div");
-    bubble.className = "msg " + (obj.from===playerName?"me":"them");
-    bubble.innerText = obj.text;
-    chat.appendChild(bubble);
-    chat.scrollTop = chat.scrollHeight;
-    setTimeout(()=>nextLine(),1500);
-  } else if(obj.choices){
-    showChoices(obj.choices);
+function beginGame() {
+  playerName = document.getElementById("playerName").value || "You";
+  localStorage.setItem("playerName", playerName);
+  document.getElementById("nameScreen").style.display = "none";
+  document.getElementById("phone").style.display = "flex";
+  bgm.volume = 0.3; bgm.play();
+  setTimeout(()=>notify("New message from Maya 💬"), 2000);
+}
+
+function notify(text){
+  document.getElementById("notif").innerText = text;
+  notifSound.play();
+}
+
+function openMessages(){
+  document.getElementById("phone").style.display = "none";
+  document.getElementById("chat").style.display = "flex";
+  showMessage(story[0]);
+}
+
+function showMessage(obj){
+  const box = document.getElementById("messages");
+  const msg = document.createElement("div");
+  msg.className = "msg " + (obj.from===playerName?"me":"them");
+  msg.textContent = (obj.from==="System"?"":obj.from+": ") + obj.text;
+  box.appendChild(msg);
+  box.scrollTop = box.scrollHeight;
+
+  if (obj.choices){
+    const cdiv = document.createElement("div");
+    cdiv.className = "choices";
+    obj.choices.forEach(ch=>{
+      const b = document.createElement("button");
+      b.textContent = ch.text;
+      b.onclick = ()=>choose(ch.next);
+      cdiv.appendChild(b);
+    });
+    box.appendChild(cdiv);
+  } else if (obj.next!=null){
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Next ➤";
+    nextBtn.onclick = ()=>choose(obj.next);
+    const cdiv = document.createElement("div");
+    cdiv.className = "choices";
+    cdiv.appendChild(nextBtn);
+    box.appendChild(cdiv);
   }
 }
 
-function showChoices(list){
-  const chat = document.getElementById("chat");
-  const div = document.createElement("div");
-  div.className = "choices";
-  list.forEach(c=>{
-    const b = document.createElement("button");
-    b.innerText = c.text;
-    b.onclick = ()=>choose(c.next, b);
-    div.appendChild(b);
-  });
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function choose(next, btn){
-  const chat = document.getElementById("chat");
-  const div = btn.parentNode;
-  div.remove();
-  const bubble = document.createElement("div");
-  bubble.className = "msg me";
-  bubble.innerText = btn.innerText;
-  chat.appendChild(bubble);
-  chat.scrollTop = chat.scrollHeight;
-  setTimeout(()=>nextLine(next), 1000);
-}
-
-function nextLine(customStep){
-  if(lock) return;
-  lock = true;
-  step = customStep || step+1;
-  if(step >= script.length) return;
-  setTimeout(()=>{
-    addMessage(script[step]);
-    lock = false;
-  }, 800);
+function choose(next){
+  const box = document.getElementById("messages");
+  const btns = box.querySelectorAll(".choices");
+  btns.forEach(b=>b.remove());
+  if (next!=null) {
+    setTimeout(()=>showMessage(story[next]),1000);
+  }
 }
 </script>
 </body>
