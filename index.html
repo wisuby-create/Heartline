@@ -1,1 +1,412 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Heartline — Romance Messenger</title>
+<style>
+  :root{
+    --ink:#111827; --muted:#6b7280; --glass:rgba(255,255,255,.7);
+    --blue:#60a5fa; --vio:#8b5cf6; --green:#34d399; --pink:#f472b6;
+  }
+  *{box-sizing:border-box}
+  html,body,#root{height:100%;margin:0;background:#0f172a;font-family:Inter,ui-sans-serif,-apple-system,Segoe UI,Roboto}
+  /* Stage centers our “phone” */
+  .stage{height:100%;display:flex;align-items:center;justify-content:center;padding:8px}
+  /* Phone shell */
+  .phone{
+    width:min(360px,calc(100vw - 16px));
+    height:min(780px,calc(100vh - 16px));
+    border-radius:28px; background:#000; border:4px solid #0b0f1a;
+    box-shadow:0 14px 34px rgba(0,0,0,.35); overflow:hidden; position:relative; display:flex; flex-direction:column;
+  }
+  .status{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#0b1220;color:#fff;z-index:3}
+  .status-time{font-weight:700} .status-date{color:#9ca3af;font-size:12px} .status-icons{color:#9ca3af;font-size:12px}
 
+  /* SCREEN with blurred sakura background (your image) */
+  .screen{position:relative;flex:1;overflow:hidden;background:#fce7f3}
+  .screen::before{
+    content:""; position:absolute; inset:0;
+    background-image:url("./assets/sakura_anime_closeup.png"); /* <- Twoje zdjęcie */
+    background-size:cover; background-position:center;
+    filter:blur(6px) saturate(1.05); transform:scale(1.08); /* miękkie, realistyczne */
+  }
+  .content{position:relative; inset:0; height:100%; display:flex; flex-direction:column; z-index:1}
+
+  /* START screen */
+  .start-wrap{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-top:40px}
+  .logo{
+    width:74%; max-width:280px; height:70px; margin:0 auto 8px;
+    background:url("./assets/heartline_logo.png") center/contain no-repeat; /* lepsze, profesjonalne logo */
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));
+  }
+  .start-hero{
+    width:86%; max-width:320px; aspect-ratio:3/4; border-radius:18px;
+    background:url("./assets/start_screen.png") center/cover no-repeat; /* Twój nowy kadr z postaciami */
+    box-shadow:0 16px 40px rgba(0,0,0,.28);
+    margin:6px auto 16px;
+  }
+  .start-card{background:rgba(255,255,255,.85); border-radius:16px; padding:12px 16px; text-align:center; box-shadow:0 10px 24px rgba(0,0,0,.15)}
+  .btn-primary{
+    margin-top:10px; padding:10px 18px; border-radius:999px; border:0; cursor:pointer;
+    background:linear-gradient(135deg,#f472b6,#8b5cf6); color:#fff; font-weight:800;
+    box-shadow:0 10px 22px rgba(139,92,246,.35);
+  }
+
+  /* NAME modal */
+  .modal{position:absolute; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; z-index:5}
+  .sheet{width:86%; background:#fff; border-radius:16px; padding:16px; box-shadow:0 18px 40px rgba(0,0,0,.35)}
+  .row{display:flex; gap:8px} .field{flex:1; padding:10px 12px; border:1px solid #e5e7eb; border-radius:12px; font-size:14px}
+  .btn{padding:10px 12px; border-radius:12px; border:0; cursor:pointer; font-weight:700}
+  .btn-ghost{background:#f3f4f6} .btn-ok{background:#111827; color:#fff}
+
+  /* HOME app grid */
+  .home{padding:18px; height:100%; display:flex; flex-direction:column}
+  .grid{flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:18px; align-items:start; justify-items:center}
+  .app{position:relative; display:flex; flex-direction:column; align-items:center}
+  .app-icon{width:68px;height:68px;border-radius:999px;background:rgba(255,255,255,.8);backdrop-filter:blur(6px);display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.13);font-size:26px}
+  .app-name{margin-top:6px;font-size:12px;font-weight:600;color:#1f2937}
+  .badge{position:absolute;right:-6px;top:-6px;background:#ef4444;color:#fff;border-radius:999px;min-width:18px;height:18px;display:grid;place-items:center;font-size:11px;padding:0 6px;border:2px solid #fff}
+
+  /* Messages list */
+  .messages{height:100%;display:flex;flex-direction:column}
+  .topbar{padding:10px 12px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.75);backdrop-filter:blur(6px)}
+  .btn-link{background:transparent;border:0;font-size:14px;color:#1f2937;cursor:pointer}
+  .list{padding:10px;display:flex;flex-direction:column;gap:10px;overflow:auto}
+  .contact{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.92);border-radius:16px;padding:12px;text-align:left;position:relative;border:1px solid rgba(0,0,0,.04)}
+  .name{font-weight:800}.last{font-size:12px;color:var(--muted)} .badge-row{position:absolute;right:8px;top:8px}
+
+  /* Avatar */
+  .avatar{width:40px;height:40px;border-radius:999px;overflow:hidden;display:grid;place-items:center;background:#eee;color:#fff;font-weight:900}
+  .avatar img{width:100%;height:100%;object-fit:cover}
+  .i-maja{background:#f472b6}.i-riven{background:#60a5fa}.i-noah{background:#34d399}.i-victor{background:#8b5cf6}
+
+  /* Chat */
+  .chat{flex:1;padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+  .rowmsg{display:flex;gap:8px;align-items:flex-start}
+  .bubble{max-width:76%;padding:9px 11px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+  .from-me{margin-left:auto;background:linear-gradient(135deg,#60a5fa,#4f46e5);color:#fff;border-top-right-radius:6px}
+  .from-them{background:#fff;color:var(--ink);border-top-left-radius:6px;border:1px solid rgba(0,0,0,.06)}
+  .sender{font-size:11px;font-weight:700;margin-bottom:4px;opacity:.85}
+  .nextbar,.choices{padding:10px 12px;background:rgba(255,255,255,.85);border-top:1px solid rgba(0,0,0,.06)}
+  .choices{display:grid;gap:8px}
+  .choice{padding:10px 12px;border-radius:14px;background:linear-gradient(135deg,#fff,#f5f8ff);border:1px solid rgba(0,0,0,.06);text-align:left;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const {useEffect,useState} = React;
+
+/* ========= ASSETS (awatar -> ścieżka lub fallback litera) ========= */
+const AVATARS = {
+  maja:   {img:'./assets/icons/maja.png',   color:'i-maja',   letter:'M'},
+  riven:  {img:'./assets/icons/riven.png',  color:'i-riven',  letter:'R'},
+  noah:   {img:'./assets/icons/noah.png',   color:'i-noah',   letter:'N'},
+  victor: {img:'./assets/icons/victor.png', color:'i-victor', letter:'V'},
+};
+function Avatar({id, small=false}){
+  const a = AVATARS[id] || {color:'',letter:'?'};
+  const size = small?28:40;
+  return (
+    <div className={"avatar "+a.color} style={{width:size,height:size,fontSize:small?12:14}}>
+      <img src={a.img} onError={(e)=>{ e.currentTarget.style.display='none'; }} alt={id}/>
+      <span>{a.letter}</span>
+    </div>
+  );
+}
+
+/* ========= FABUŁA / SKRYPTY ========= */
+const Scripts = {
+  maja: {
+    start: { from:'Maja', text:'Hej! Zgadnij, kto do mnie dziś napisał 👀' },
+    choices: [
+      { id:'m1', text:'Nie trzymaj mnie w niepewności!' },
+      { id:'m2', text:'Tylko nie mów, że Riven…' },
+      { id:'m3', text:'Maja, nie teraz.' },
+    ],
+    replies: {
+      m1: [
+        { from:'Maja', text:'Riven. Napisał do MNIE zamiast do ciebie.' },
+        { from:'Maja', text:'Co on w ogóle robi? 😤' },
+      ],
+      m2: [
+        { from:'Maja', text:'…No. Sorry 😅' },
+        { from:'Maja', text:'Pytał, czy dalej jesteś na niego zła.' },
+      ],
+      m3: [
+        { from:'Maja', text:'Mhm. A jednak czytasz 👀' },
+        { from:'Maja', text:'Zawsze chcesz wiedzieć, [MC].' },
+      ],
+    },
+    effects: { m1:[{unlock:'riven',notify:true}], m2:[{unlock:'riven',notify:true}], m3:[{unlock:'riven',notify:true}] },
+  },
+  riven: {
+    start: { from:'Riven', text:'Jesteś jeszcze?' },
+    choices: [
+      { id:'r1', text:'Nie spodziewałam się, że napiszesz.' },
+      { id:'r2', text:'Ostatnio mało śpię.' },
+      { id:'r3', text:'(Nie odpowiadaj)' },
+    ],
+    replies: {
+      r1: [
+        { from:'Riven', text:'Ja też nie. Chyba oboje nie umiemy odpuścić.' },
+        { from:'Riven', text:'Maja mówiła, że jesteś w mieście.' },
+        { from:'Riven', text:'Myślisz czasem o… tamtej nocy?' },
+      ],
+      r2: [
+        { from:'Riven', text:'Typowe. Kiedyś pisałaś mi memy o 2 w nocy.' },
+        { from:'Riven', text:'Maja mówiła, że jesteś w mieście.' },
+        { from:'Riven', text:'Myślisz czasem o… tamtej nocy?' },
+      ],
+      r3: [
+        { from:'Riven', text:'…Tak. Chyba zasłużyłem na ciszę.' },
+        { from:'Riven', text:'Maja mówiła, że jesteś w mieście.' },
+        { from:'Riven', text:'Myślisz czasem o… tamtej nocy?' },
+      ],
+    },
+    followupChoices: [
+      { id:'rfx1', text:'Starasz się nie.' },
+      { id:'rfx2', text:'Codziennie.' },
+      { id:'rfx3', text:'Skasuj mój numer.' },
+    ],
+    followupReplies: {
+      rfx1:[{ from:'Riven', text:'Rozumiem. Ja nie potrafię.' }],
+      rfx2:[{ from:'Riven', text:'To samo. Miesza mi w głowie.' }],
+      rfx3:[{ from:'Riven', text:'Jasne. (…Wybacz.)' }],
+    }
+  }
+};
+
+const CONTACTS = [
+  { id:'maja', name:'Maja'   },
+  { id:'riven', name:'Riven' },
+  { id:'noah', name:'Noah'   },
+  { id:'victor', name:'Victor'},
+];
+
+const Unlock = {
+  start: { maja:true, riven:false, noah:false, victor:false },
+  apply(effects, state){
+    for(const eff of effects||[]){
+      if(eff.unlock){ state.unlocked[eff.unlock]=true; state.badges[eff.unlock]=(state.badges[eff.unlock]||0)+1; }
+    }
+  }
+};
+
+/* ========= UI ========= */
+function StatusBar(){
+  const [t,setT]=useState(new Date());
+  useEffect(()=>{const i=setInterval(()=>setT(new Date()),1000);return()=>clearInterval(i)},[]);
+  const time=t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const date=t.toLocaleDateString('pl-PL',{weekday:'short',day:'numeric',month:'short'});
+  return <div className="status"><div className="status-time">{time}</div><div className="status-date">{date}</div><div className="status-icons">🔋 92%</div></div>;
+}
+
+function Start({onStart}){
+  return (
+    <div className="start-wrap">
+      <div className="logo" aria-label="Heartline logo"></div>
+      <div className="start-hero" aria-hidden="true"></div>
+      <div className="start-card">
+        <div style={{fontWeight:800}}>Heartline — Romance Messenger</div>
+        <div style={{fontSize:12,color:'#374151'}}>Tap to begin your story</div>
+        <button className="btn-primary" onClick={onStart}>Start 💬</button>
+      </div>
+    </div>
+  );
+}
+
+function NameModal({defName,onCancel,onOK}){
+  const [name,setName]=useState(defName||"");
+  return (
+    <div className="modal">
+      <div className="sheet">
+        <h3 style={{marginTop:0}}>Podaj imię bohaterki</h3>
+        <div className="row">
+          <input className="field" placeholder="Twoje imię" value={name} onChange={e=>setName(e.target.value)}/>
+          <button className="btn btn-ok" onClick={()=>onOK(name.trim()||"You")}>OK</button>
+          <button className="btn btn-ghost" onClick={onCancel}>Anuluj</button>
+        </div>
+        <div style={{fontSize:12,color:'#6b7280',marginTop:8}}>Możesz zmienić później w Ustawieniach</div>
+      </div>
+    </div>
+  );
+}
+
+/* HOME grid */
+function Home({unreadTotal,openMessages}){
+  const apps=[['Messages','💬',openMessages],['Phone','📞'],['Gallery','🖼️'],['Clock','⏰'],['Settings','⚙️'],['Notes','📝'],['Music','🎵']];
+  return (
+    <div className="home">
+      <div className="grid">
+        {apps.map(([name,icon,fn])=>(
+          <button key={name} className="app" onClick={()=>fn&&fn()}>
+            <div className="app-icon">{icon}</div>
+            {name==='Messages' && unreadTotal>0 && <div className="badge">{unreadTotal}</div>}
+            <div className="app-name">{name}</div>
+          </button>
+        ))}
+      </div>
+      <div style="text-align:center;color:#374151;font-size:12px;text-shadow:0 1px 0 #fff">Dotknij „Messages”, aby otworzyć czaty</div>
+    </div>
+  );
+}
+
+function MessagesList({unlocked,chats,unread,onOpenChat,onBack}){
+  const visible = Object.keys(unlocked).filter(id=>unlocked[id]).map(id=>CONTACTS.find(c=>c.id===id));
+  const last = id => {
+    const m = chats[id]?.messages||[];
+    return m.length? m[m.length-1].text : Scripts[id]?.start?.text || '';
+  };
+  return (
+    <div className="messages">
+      <div className="topbar">
+        <button className="btn-link" onClick={onBack}>◀︎</button>
+        <div style={{fontWeight:800}}>Wiadomości</div>
+        <div style={{width:24}}/>
+      </div>
+      <div className="list">
+        {visible.map(c=>(
+          <button key={c.id} className="contact" onClick={()=>onOpenChat(c.id)}>
+            <Avatar id={c.id}/>
+            <div><div className="name">{c.name}</div><div className="last">{last(c.id)}</div></div>
+            {(unread[c.id]||0)>0 && <div className="badge badge-row">{unread[c.id]}</div>}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ChatView({contact,mcName,chat,queue,choices,next,choose,onBack}){
+  const render = (t)=> t.replaceAll('[MC]', mcName||'You');
+  return (
+    <div className="messages">
+      <div className="topbar">
+        <button className="btn-link" onClick={onBack}>Back</button>
+        <div style={{fontWeight:800}}>{contact.name}</div>
+        <Avatar id={contact.id}/>
+      </div>
+      <div className="chat">
+        {chat.map((m,i)=>(
+          <div key={i} className="rowmsg" style={{justifyContent:m.me?'flex-end':'flex-start'}}>
+            {!m.me && <Avatar id={(m.from||'').toLowerCase()} small/>}
+            <div className={`bubble ${m.me?'from-me':'from-them'}`}>
+              <div className="sender">{m.me? 'Ty': m.from}</div>
+              <div>{render(m.text)}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {queue.length>0
+        ? <div className="nextbar"><button className="choice" onClick={next}>Dalej ▶</button></div>
+        : <div className="choices">
+          {choices.length? choices.map(c=>
+            <button key={c.id} className="choice" onClick={()=>choose(c.id)}>{c.text}</button>
+          ): <div style={{fontSize:12,color:'#6b7280'}}>Brak wyborów — poczekaj na wiadomość</div>}
+        </div>}
+    </div>
+  );
+}
+
+/* ========= APP ========= */
+function App(){
+  const [started,setStarted]=useState(false);
+  const [askName,setAskName]=useState(false);
+  const [mcName,setMcName]=useState(localStorage.getItem('heartline_name')||'');
+  const [screen,setScreen]=useState('home'); // 'home' | 'messages' | 'chat'
+  const [currentId,setCurrentId]=useState(null);
+
+  const [unlocked,setUnlocked]=useState({...Unlock.start});
+  const [badges,setBadges]=useState({});
+  const [chats,setChats]=useState(()=>{
+    const o={}; ['maja','riven','noah','victor'].forEach(id=>o[id]={messages:[],queue:[],choices:[],step:'idle'});
+    return o;
+  });
+
+  const unreadTotal = Object.values(badges).reduce((a,b)=>a+b,0);
+  const setChat=(id,fn)=>setChats(prev=>({...prev,[id]:fn(prev[id])}));
+  const ensureStart=(id)=>setChats(prev=>{
+    if(!Scripts[id]) return prev;
+    const c=prev[id];
+    if(c.messages.length===0 && c.queue.length===0){
+      const s=Scripts[id].start;
+      return {...prev,[id]:{...c,queue:[{from:s.from,text:s.text,me:false}],step:'started'}};
+    } return prev;
+  });
+
+  const openMessages=()=>{ setScreen('messages'); ensureStart('maja'); setBadges(b=>({...b,maja:(b.maja||0)+1})) };
+  const openChat=(id)=>{ setCurrentId(id); setScreen('chat'); ensureStart(id); setBadges(b=>({...b,[id]:0})) };
+
+  const next=(id)=>setChat(id,c=>{
+    if(!c.queue.length) return c;
+    const [msg,...rest]=c.queue; const messages=[...c.messages,msg];
+    let choices=c.choices, step=c.step;
+    if(rest.length===0 && step==='started'){ choices=Scripts[id].choices||[]; step='await'; }
+    return {...c,messages,queue:rest,choices,step};
+  });
+
+  const choose=(id,choiceId)=>{
+    const sc=Scripts[id]; const pick=(sc.choices||[]).find(x=>x.id===choiceId);
+    setChat(id,c=>({...c,messages:[...c.messages,{from:'You',text:pick.text,me:true}],choices:[]}));
+    const bundle=(sc.replies||{})[choiceId]||[];
+    setChat(id,c=>({...c,queue:[...c.queue,...bundle]}));
+
+    const eff=(sc.effects||{})[choiceId]||[];
+    const st={unlocked:{...unlocked},badges:{...badges}};
+    Unlock.apply(eff, st); setUnlocked(st.unlocked); setBadges(st.badges);
+  };
+
+  // Riven follow-up choices
+  useEffect(()=>{
+    if(currentId!=='riven') return;
+    const c=chats.riven;
+    if(c.queue.length===0 && c.choices.length===0 && c.messages.length>0 && c.step!=='follow'){
+      setChats(prev=>({...prev,riven:{...prev.riven,choices:Scripts.riven.followupChoices,step:'follow'}}));
+    }
+  },[chats.riven, currentId]);
+
+  const chooseProxy=(id,choiceId)=>{
+    if(id==='riven' && ['rfx1','rfx2','rfx3'].includes(choiceId)){
+      const rfx=Scripts.riven.followupReplies[choiceId]||[];
+      const text=(Scripts.riven.followupChoices.find(x=>x.id===choiceId)||{}).text;
+      setChat('riven',c=>({...c,messages:[...c.messages,{from:'You',text,me:true}],choices:[],queue:[...c.queue,...rfx]}));
+    } else choose(id,choiceId);
+  };
+
+  const startGame=()=>{ setStarted(true); setAskName(true); };
+  const saveName=(nm)=>{ setAskName(false); setMcName(nm); localStorage.setItem('heartline_name', nm); setScreen('home'); };
+
+  return (
+    <div className="stage">
+      <div className="phone">
+        <StatusBar/>
+        <div className="screen">
+          <div className="content">
+            {!started && <Start onStart={startGame}/>}
+            {askName && <NameModal defName={mcName} onCancel={()=>setAskName(false)} onOK={saveName}/>}
+            {started && !askName && screen==='home' && <Home unreadTotal={unreadTotal} openMessages={openMessages}/>}
+            {started && screen==='messages' && <MessagesList unlocked={unlocked} chats={chats} unread={badges} onOpenChat={openChat} onBack={()=>setScreen('home')}/>}
+            {started && screen==='chat' && currentId && (
+              <ChatView contact={CONTACTS.find(c=>c.id===currentId)} mcName={mcName}
+                chat={chats[currentId].messages} queue={chats[currentId].queue} choices={chats[currentId].choices}
+                next={()=>next(currentId)} choose={(cid)=>chooseProxy(currentId,cid)} onBack={()=>setScreen('messages')} />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
