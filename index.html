@@ -1,565 +1,216 @@
-<!doctype html>
-<html lang="pl">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Heartline — Romance Messenger</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heartline</title>
+<link rel="icon" href="assets/heartline_logo.png">
 <style>
-  :root{
-    --ink:#111827; --muted:#6b7280; --glass:rgba(255,255,255,.7);
-    --blue:#60a5fa; --vio:#8b5cf6; --green:#34d399; --pink:#f472b6;
-    --card:rgba(255,255,255,.9);
+  body {
+    margin: 0;
+    background: url('assets/sakura_anime_closeup.png') no-repeat center/cover;
+    backdrop-filter: blur(5px);
+    font-family: 'Poppins', sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-  *{box-sizing:border-box}
-  html,body,#root{height:100%;margin:0;background:#0f172a;font-family:Inter,ui-sans-serif,-apple-system,Segoe UI,Roboto}
-  .stage{height:100%;display:flex;align-items:center;justify-content:center;padding:8px}
-  .phone{
-    width:min(360px,calc(100vw - 16px));
-    height:min(780px,calc(100vh - 16px));
-    border-radius:28px; background:#000; border:4px solid #0b0f1a;
-    box-shadow:0 14px 34px rgba(0,0,0,.35); overflow:hidden; position:relative; display:flex; flex-direction:column;
+  #game {
+    width: 360px;
+    height: 640px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 25px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    overflow: hidden;
+    position: relative;
   }
-  .status{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#0b1220;color:#fff;z-index:3}
-  .status-time{font-weight:700} .status-date{color:#9ca3af;font-size:12px} .status-icons{color:#9ca3af;font-size:12px}
-
-  /* Tło telefonu (Twoja sakura) */
-  .screen{position:relative;flex:1;overflow:hidden;background:#fce7f3}
-  .screen::before{
-    content:""; position:absolute; inset:0;
-    background-image:url("./assets/sakura_anime_closeup.png");
-    background-size:cover; background-position:center;
-    filter:blur(6px) saturate(1.05); transform:scale(1.08);
+  #chat {
+    padding: 15px;
+    height: 85%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
-  .content{position:relative; inset:0; height:100%; display:flex; flex-direction:column; z-index:1}
-
-  /* START overlay */
-  .start-wrap{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-top:40px; z-index:5}
-  .logo{
-    width:74%; max-width:280px; height:70px; margin:0 auto 8px;
-    background:url("./assets/heartline_logo.png") center/contain no-repeat;
-    filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));
+  .msg {
+    margin: 6px 0;
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 15px;
+    line-height: 1.3em;
   }
-  .start-hero{
-    width:86%; max-width:320px; aspect-ratio:3/4; border-radius:18px;
-    background:url("./assets/start_screen.png") center/cover no-repeat;
-    box-shadow:0 16px 40px rgba(0,0,0,.28);
-    margin:6px auto 16px;
+  .msg.them {
+    align-self: flex-start;
+    background: #f0f0f0;
   }
-  .start-card{background:rgba(255,255,255,.85); border-radius:16px; padding:12px 16px; text-align:center; box-shadow:0 10px 24px rgba(0,0,0,.15)}
-  .btn-primary{
-    margin-top:10px; padding:10px 18px; border-radius:999px; border:0; cursor:pointer;
-    background:linear-gradient(135deg,#f472b6,#8b5cf6); color:#fff; font-weight:800;
-    box-shadow:0 10px 22px rgba(139,92,246,.35);
+  .msg.me {
+    align-self: flex-end;
+    background: #cde6ff;
   }
-
-  /* Modal z imieniem */
-  .modal{position:absolute; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; z-index:6}
-  .sheet{width:86%; background:#fff; border-radius:16px; padding:16px; box-shadow:0 18px 40px rgba(0,0,0,.35)}
-  .row{display:flex; gap:8px} .field{flex:1; padding:10px 12px; border:1px solid #e5e7eb; border-radius:12px; font-size:14px}
-  .btn{padding:10px 12px; border-radius:12px; border:0; cursor:pointer; font-weight:700}
-  .btn-ghost{background:#f3f4f6} .btn-ok{background:#111827; color:#fff}
-
-  /* Home */
-  .home{padding:18px; height:100%; display:flex; flex-direction:column}
-  .grid{flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:18px; align-items:start; justify-items:center}
-  .app{position:relative; display:flex; flex-direction:column; align-items:center}
-  .app-icon{width:68px;height:68px;border-radius:999px;background:rgba(255,255,255,.8);backdrop-filter:blur(6px);display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.13);font-size:26px}
-  .app-name{margin-top:6px;font-size:12px;font-weight:600;color:#1f2937}
-  .badge{position:absolute;right:-6px;top:-6px;background:#ef4444;color:#fff;border-radius:999px;min-width:18px;height:18px;display:grid;place-items:center;font-size:11px;padding:0 6px;border:2px solid #fff}
-  .home-hint{text-align:center;color:#374151;font-size:12px;text-shadow:0 1px 0 #fff}
-
-  /* Messages / lista */
-  .messages{height:100%;display:flex;flex-direction:column}
-  .topbar{padding:10px 12px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.75);backdrop-filter:blur(6px)}
-  .btn-link{background:transparent;border:0;font-size:14px;color:#1f2937;cursor:pointer}
-  .list{padding:10px;display:flex;flex-direction:column;gap:10px;overflow:auto}
-  .contact{display:flex;gap:10px;align-items:center;background:var(--card);border-radius:16px;padding:12px;text-align:left;position:relative;border:1px solid rgba(0,0,0,.04)}
-  .name{font-weight:800}.last{font-size:12px;color:var(--muted)} .badge-row{position:absolute;right:8px;top:8px}
-  .avatar{width:40px;height:40px;border-radius:999px;overflow:hidden;display:grid;place-items:center;background:#eee;color:#fff;font-weight:900}
-  .avatar img{width:100%;height:100%;object-fit:cover}
-
-  /* Chat */
-  .chat{flex:1;padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
-  .rowmsg{display:flex;gap:8px;align-items:flex-start}
-  .bubble{max-width:76%;padding:9px 11px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
-  .from-me{margin-left:auto;background:linear-gradient(135deg,#60a5fa,#4f46e5);color:#fff;border-top-right-radius:6px}
-  .from-them{background:#fff;color:var(--ink);border-top-left-radius:6px;border:1px solid rgba(0,0,0,.06)}
-  .sender{font-size:11px;font-weight:700;margin-bottom:4px;opacity:.85}
-  .nextbar,.choices{padding:10px 12px;background:rgba(255,255,255,.85);border-top:1px solid rgba(0,0,0,.06)}
-  .choices{display:grid;gap:8px}
-  .choice{padding:10px 12px;border-radius:14px;background:linear-gradient(135deg,#fff,#f5f8ff);border:1px solid rgba(0,0,0,.06);text-align:left;cursor:pointer}
-
-  /* Toast */
-  .toast{position:absolute;left:50%;transform:translateX(-50%);bottom:16px;background:#111827;color:#fff;padding:10px 14px;border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.3);font-size:13px;z-index:9}
+  .choices button {
+    display: block;
+    margin: 6px auto;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 12px;
+    background: #ff91c7;
+    color: white;
+    font-weight: bold;
+  }
+  #start {
+    width: 100%;
+    height: 100%;
+    background: url('assets/start_screen.png') no-repeat center/cover;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  #start button {
+    margin-bottom: 50px;
+    font-size: 20px;
+    background: #ff91c7;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 30px;
+  }
+  #inputName {
+    width: 90%;
+    border: 2px solid #ff91c7;
+    border-radius: 15px;
+    padding: 8px;
+    margin-top: 10px;
+    font-size: 16px;
+  }
 </style>
 </head>
+
 <body>
-<div id="root"></div>
+<div id="game">
+  <div id="start">
+    <button onclick="showName()">Start 💬</button>
+  </div>
+</div>
 
-<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<audio id="notif" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_64a8e0e3ce.mp3?filename=notification-113724.mp3"></audio>
+<audio id="music" src="https://cdn.pixabay.com/download/audio/2023/01/24/audio_1f6b665fa1.mp3?filename=lofi-study-126566.mp3" loop></audio>
 
-<script type="text/babel">
-const {useEffect,useState} = React;
+<script>
+let playerName = "";
+let gameDiv = document.getElementById("game");
+let notif = document.getElementById("notif");
+let music = document.getElementById("music");
 
-/* ====== ASSETS ====== */
-const ICONS = {
-  mc:     './assets/icons/icon_mc.png',
-  maja:   './assets/icons/icon_maja.png',
-  riven:  './assets/icons/icon_riven.png',
-  noah:   './assets/icons/icon_noah.png',
-  victor: './assets/icons/icon_victor.png',
-};
+function showName(){
+  gameDiv.innerHTML = `
+  <div style="text-align:center; margin-top:200px;">
+    <h2>Enter your name:</h2>
+    <input id="inputName" placeholder="Your name...">
+    <br><br>
+    <button onclick="startGame()">Continue ➤</button>
+  </div>`;
+}
 
-/* ====== STORY: Chapter 1 ====== */
-const Scripts = {
-  maja: {
-    start: { from:'Maya', text:'Hey! Guess who texted me today 👀' },
-    choices: [
-      { id:'m1', text:"Don't keep me in suspense!" },
-      { id:'m2', text:"Please don't say Riven…" },
-      { id:'m3', text:"Not now, Maya." },
-    ],
-    replies: {
-      m1: [
-        { from:'Maya', text:'Riven. He texted ME instead of you.' },
-        { from:'Maya', text:"What is he even doing? 😤" },
-        { system:'unlock', who:'riven', notify:true }
-      ],
-      m2: [
-        { from:'Maya', text:'…yeah. Sorry 😅' },
-        { from:'Maya', text:'He asked if you were still mad.' },
-        { system:'unlock', who:'riven', notify:true }
-      ],
-      m3: [
-        { from:'Maya', text:'Uh-huh. And yet you’re reading this 👀' },
-        { from:'Maya', text:'You always want to know, [MC].' },
-        { system:'unlock', who:'riven', notify:true }
-      ],
-    }
-  },
-  riven: {
-    start: { from:'Riven', text:'You still awake?' },
-    choices: [
-      { id:'r1', text:"Didn't expect to hear from you." , aff:{riven:+1} },
-      { id:'r2', text:"I don't sleep much lately.",       aff:{riven:+1} },
-      { id:'r3', text:"(Don’t reply)",                    aff:{riven:-1} },
-    ],
-    replies: {
-      r1: [
-        { from:'Riven', text:"Me neither. Guess we're both bad at letting go." },
-        { from:'Riven', text:'Maya said you’re still in town.' },
-        { from:'Riven', text:'Do you ever think about… that night?' },
-      ],
-      r2: [
-        { from:'Riven', text:'Figures. You used to text me at 2AM just to send memes.' },
-        { from:'Riven', text:'Maya said you’re still in town.' },
-        { from:'Riven', text:'Do you ever think about… that night?' },
-      ],
-      r3: [
-        { from:'Riven', text:'…yeah. I probably deserve the silence.' },
-        { from:'Riven', text:'Maya said you’re still in town.' },
-        { from:'Riven', text:'Do you ever think about… that night?' },
-      ],
-    },
-    followupChoices: [
-      { id:'rf1', text:'I try not to.',         aff:{riven:+1}, cg:'cg_riven_01' },
-      { id:'rf2', text:'Every day.',            aff:{riven:+2}, cg:'cg_riven_01' },
-      { id:'rf3', text:'Delete my number.',     aff:{riven:-2} },
-    ],
-    followupReplies: {
-      rf1: [
-        { from:'Riven', text:"I get that. Still, I can't stop." },
-        { system:'unlock', who:'noah', notify:true },
-        { system:'flag', key:'maja_checkin' }
-      ],
-      rf2: [
-        { from:'Riven', text:'Same. It messes with my head.' },
-        { system:'unlock', who:'noah', notify:true },
-        { system:'flag', key:'maja_checkin' }
-      ],
-      rf3: [
-        { from:'Riven', text:'Got it. (…Still sorry.)' },
-        { system:'unlock', who:'noah', notify:true },
-        { system:'flag', key:'maja_checkin' }
-      ],
-    }
-  },
-  maja_checkin: {
-    start: { from:'Maya', text:"You okay? He pinged me again. I didn't say anything." },
-    choices: [
-      { id:'mc1', text:"Thanks for telling me." },
-      { id:'mc2', text:"Please, no more updates." },
-    ],
-    replies: {
-      mc1: [{ from:'Maya', text:"Okay. I’m here if you wanna talk." }],
-      mc2: [{ from:'Maya', text:"Got it. I’ll keep quiet." }],
-    }
-  },
-  noah: {
-    start: { from:'Noah', text:"Hi! Are you the person who left a book at the cafe?" },
-    choices: [
-      { id:'n1', text:"Wait— how did you get my number?", aff:{noah:+1} },
-      { id:'n2', text:"Yes, that was me. Thanks!",         aff:{noah:+2}, cg:'cg_noah_01' },
-      { id:'n3', text:"Wrong person.",                     aff:{noah:-1} },
-    ],
-    replies: {
-      n1: [
-        { from:'Noah', text:"The barista gave me your note. Sorry if that's weird!" },
-        { from:'Noah', text:"I can leave it at the counter, if you prefer." },
-        { system:'unlock', who:'victor', notify:true }
-      ],
-      n2: [
-        { from:'Noah', text:"Great! I’ll hold it for you. Also— your taste? Impeccable." },
-        { system:'cg', id:'cg_noah_01' },
-        { system:'unlock', who:'victor', notify:true }
-      ],
-      n3: [
-        { from:'Noah', text:"Oh! My bad. Still, nice to meet you anyway?" },
-        { system:'unlock', who:'victor', notify:true }
-      ],
-    }
-  },
-  victor: {
-    start: { from:'Victor', text:"We haven't met. Your name keeps appearing beside mine." },
-    choices: [
-      { id:'v1', text:"Who are you?",                 aff:{victor:+1} },
-      { id:'v2', text:"Is this about the gallery?",   aff:{victor:+2}, cg:'cg_victor_01' },
-      { id:'v3', text:"Wrong number. Bye.",           aff:{victor:-1} }
-    ],
-    replies: {
-      v1: [
-        { from:'Victor', text:"Victor. Curator. And apparently— recipient of your misplaced files." },
-        { from:'Victor', text:"Next time, double-check the attachments." }
-      ],
-      v2: [
-        { from:'Victor', text:"Yes. Your eye is better than you think." },
-        { system:'cg', id:'cg_victor_01' },
-        { from:'Victor', text:"Come by. They speak louder in person." }
-      ],
-      v3: [{ from:'Victor', text:"Understood." }],
-    }
-  }
-};
+function startGame(){
+  playerName = document.getElementById("inputName").value || "You";
+  music.volume = 0.3;
+  music.play();
+  startChat();
+}
 
-/* ====== CONTACTS ====== */
-const CONTACTS = [
-  { id:'maja',   name:'Maya',   icon:ICONS.maja },
-  { id:'riven',  name:'Riven',  icon:ICONS.riven },
-  { id:'noah',   name:'Noah',   icon:ICONS.noah },
-  { id:'victor', name:'Victor', icon:ICONS.victor },
+const script = [
+  {from:"Maja", text:"Hey! Guess who texted me last night? 👀"},
+  {choices:[
+    {text:"Tell me already!", next:1},
+    {text:"Let me guess… Riven?", next:2},
+    {text:"You’re glowing, Maja 😏", next:3}
+  ]},
+  {from:"Maja", text:"Yeah... it was Riven. Can you believe that?"},
+  {from:"Maja", text:"He asked about you, actually."},
+  {from:"Maja", text:"Said he saw you around town again."},
+  {choices:[
+    {text:"What did you tell him?", next:4},
+    {text:"I don’t want to talk about him.", next:5}
+  ]},
+  {from:"Maja", text:"Just that you’re back. I didn’t say more!"},
+  {from:"Maja", text:"Anyway... he might text you."},
+  {from:"Riven", text:"Hey. Long time no see."},
+  {choices:[
+    {text:"Hey...", next:6},
+    {text:"What do you want, Riven?", next:7}
+  ]},
+  {from:"Riven", text:"Do you ever think about… that night?"},
+  {from:"Riven", text:"I probably deserve the silence."},
+  {from:"Riven", text:"Maya said you’re still in town."},
+  {from:"Noah", text:"Hi! Are you going to the coffee shop later? ☕"},
+  {choices:[
+    {text:"Maybe. Why?", next:8},
+    {text:"If you’re buying, I’m coming 😄", next:9}
+  ]},
+  {from:"Victor", text:"Good evening. I sent you the documents you asked for."},
+  {from:"Victor", text:"You seem... distracted lately. Everything alright?"}
 ];
 
-/* ====== REACT UI ====== */
-function StatusBar(){
-  const [t,setT]=useState(new Date());
-  useEffect(()=>{const i=setInterval(()=>setT(new Date()),1000);return()=>clearInterval(i)},[]);
-  const time=t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  const date=t.toLocaleDateString('pl-PL',{weekday:'short',day:'numeric',month:'short'});
-  return <div className="status"><div className="status-time">{time}</div><div className="status-date">{date}</div><div className="status-icons">🔋 92%</div></div>;
-}
-function Avatar({src, fallback, size=40}){
-  const [ok,setOk]=useState(true);
-  return (
-    <div className="avatar" style={{width:size,height:size}}>
-      {ok ? <img src={src} alt={fallback} onError={()=>setOk(false)}/> : <span>{fallback[0]||'?'}</span>}
-    </div>
-  );
-}
-function Start({onStart}){
-  return (
-    <div className="start-wrap">
-      <div className="logo" aria-label="Heartline logo"></div>
-      <div className="start-hero" aria-hidden="true"></div>
-      <div className="start-card">
-        <div style={{fontWeight:800}}>Heartline — Romance Messenger</div>
-        <div style={{fontSize:12,color:'#374151'}}>Tap to begin your story</div>
-        <button className="btn-primary" onClick={onStart}>Start 💬</button>
-      </div>
-    </div>
-  );
-}
-function NameModal({defName,onCancel,onOK}){
-  const [name,setName]=useState(defName||"");
-  return (
-    <div className="modal">
-      <div className="sheet">
-        <h3 style={{marginTop:0}}>Podaj imię bohaterki</h3>
-        <div className="row">
-          <input className="field" placeholder="Twoje imię" value={name} onChange={e=>setName(e.target.value)}/>
-          <button className="btn btn-ok" onClick={()=>onOK(name.trim()||"You")}>OK</button>
-          <button className="btn btn-ghost" onClick={onCancel}>Anuluj</button>
-        </div>
-        <div style={{fontSize:12,color:'#6b7280',marginTop:8}}>Imię pojawi się w dialogach (ang.).</div>
-      </div>
-    </div>
-  );
-}
-function Home({unreadTotal,openMessages,openGallery}){
-  const apps=[
-    ['Messages','💬',openMessages],
-    ['Phone','📞',null],
-    ['Gallery','🖼️',openGallery],
-    ['Clock','⏰',null],
-    ['Settings','⚙️',null],
-    ['Notes','📝',null],
-    ['Music','🎵',null],
-  ];
-  return (
-    <div className="home">
-      <div className="grid">
-        {apps.map(([name,icon,fn])=>(
-          <button key={name} className="app" onClick={()=>fn&&fn()}>
-            <div className="app-icon">{icon}</div>
-            {name==='Messages' && unreadTotal>0 && <div className="badge">{unreadTotal}</div>}
-            <div className="app-name">{name}</div>
-          </button>
-        ))}
-      </div>
-      <div className="home-hint">Po chwili pojawi się powiadomienie od „Maya”.</div>
-    </div>
-  );
-}
-function MessagesList({contacts,unlocked,chats,unread,onOpenChat,onBack}){
-  const visible = contacts.filter(c=>unlocked[c.id]);
-  const last = id => {
-    const m = chats[id]?.messages||[];
-    return m.length? m[m.length-1].text : (Scripts[id]?.start?.text || '');
-  };
-  return (
-    <div className="messages">
-      <div className="topbar">
-        <button className="btn-link" onClick={onBack}>◀︎</button>
-        <div style={{fontWeight:800}}>Wiadomości</div>
-        <div style={{width:24}}/>
-      </div>
-      <div className="list">
-        {visible.map(c=>(
-          <button key={c.id} className="contact" onClick={()=>onOpenChat(c.id)}>
-            <Avatar src={c.icon} fallback={c.name}/>
-            <div><div className="name">{c.name}</div><div className="last">{last(c.id)}</div></div>
-            {(unread[c.id]||0)>0 && <div className="badge badge-row">{unread[c.id]}</div>}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-function ChatView({contact,mcName,chat,queue,choices,next,choose,onBack}){
-  const render = (t)=> t.replaceAll('[MC]', mcName||'You');
-  return (
-    <div className="messages">
-      <div className="topbar">
-        <button className="btn-link" onClick={onBack}>Back</button>
-        <div style={{fontWeight:800}}>{contact.name}</div>
-        <Avatar src={contact.icon} fallback={contact.name}/>
-      </div>
-      <div className="chat">
-        {chat.map((m,i)=>(
-          <div key={i} className="rowmsg" style={{justifyContent:m.me?'flex-end':'flex-start'}}>
-            {!m.me && <Avatar src={contact.icon} fallback={contact.name} size={28}/>}
-            <div className={`bubble ${m.me?'from-me':'from-them'}`}>
-              <div className="sender">{m.me? 'You': m.from}</div>
-              <div>{render(m.text)}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-      {queue.length>0
-        ? <div className="nextbar"><button className="choice" onClick={next}>Dalej ▶</button></div>
-        : <div className="choices">
-          {choices.length? choices.map(c=>
-            <button key={c.id} className="choice" onClick={()=>choose(c.id)}>{c.text}</button>
-          ): <div style={{fontSize:12,color:'#6b7280'}}>Brak wyborów — poczekaj na wiadomość</div>}
-        </div>}
-    </div>
-  );
+let step = 0;
+let lock = false;
+
+function startChat(){
+  gameDiv.innerHTML = `<div id="chat"></div>`;
+  addMessage(script[0]);
 }
 
-/* ====== APP / Logika ====== */
-function App(){
-  const [started,setStarted]=useState(false);
-  const [askName,setAskName]=useState(false);
-  const [mcName,setMcName]=useState(localStorage.getItem('heartline_name')||'');
-  const [screen,setScreen]=useState('home'); // 'home' | 'messages' | 'chat'
-  const [currentId,setCurrentId]=useState(null);
+function addMessage(obj){
+  const chat = document.getElementById("chat");
+  if(obj.from){
+    notif.play();
+    const bubble = document.createElement("div");
+    bubble.className = "msg " + (obj.from===playerName?"me":"them");
+    bubble.innerText = obj.text;
+    chat.appendChild(bubble);
+    chat.scrollTop = chat.scrollHeight;
+    setTimeout(()=>nextLine(),1500);
+  } else if(obj.choices){
+    showChoices(obj.choices);
+  }
+}
 
-  const [unlocked,setUnlocked]=useState({maja:false,riven:false,noah:false,victor:false});
-  const [badges,setBadges]=useState({});
-  const [flags,setFlags]=useState({});
-  const [aff,setAff]=useState({riven:0,noah:0,victor:0});
-  const [toast,setToast]=useState(null);
-
-  const [chats,setChats]=useState(()=>{
-    const o={}; ['maja','riven','noah','victor'].forEach(id=>o[id]={messages:[],queue:[],choices:[],step:'idle'});
-    return o;
+function showChoices(list){
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.className = "choices";
+  list.forEach(c=>{
+    const b = document.createElement("button");
+    b.innerText = c.text;
+    b.onclick = ()=>choose(c.next, b);
+    div.appendChild(b);
   });
-
-  // diagnostyka ładowania obrazów (zobacz w konsoli)
-  const pingImg=(url,label)=>{ const i=new Image(); i.onload=()=>console.log('OK',label,url); i.onerror=()=>console.warn('BŁĄD',label,url); i.src=url+'?v='+(Date.now()%1e6); };
-
-  useEffect(()=>{
-    pingImg('./assets/heartline_logo.png','logo');
-    pingImg('./assets/start_screen.png','start_screen');
-    pingImg('./assets/sakura_anime_closeup.png','bg');
-    Object.values({
-      mc:'./assets/icons/icon_mc.png',maja:'./assets/icons/icon_maja.png',r:'./assets/icons/icon_riven.png',n:'./assets/icons/icon_noah.png',v:'./assets/icons/icon_victor.png'
-    }).forEach((p)=>pingImg(p,'icon'));
-  },[]);
-
-  const setChat=(id,fn)=>setChats(prev=>({...prev,[id]:fn(prev[id])}));
-  const unreadTotal = Object.values(badges).reduce((a,b)=>a+b,0);
-
-  // Zdarzenia systemowe (unlock / flag / cg)
-  const applySystem=(entry)=>{
-    if(entry.system==='unlock'){
-      const who=entry.who;
-      setUnlocked(u=>({...u,[who]:true}));
-      setBadges(b=>({...b,[who]:(b[who]||0)+1}));
-      if(who==='maja'){ setToast('New message from Maya'); setTimeout(()=>setToast(null),1400); }
-    }
-    if(entry.system==='flag'){ setFlags(f=>({...f,[entry.key]:true})); }
-  };
-
-  // dociąganie pierwszej wiadomości wątku
-  const ensureStart=(id)=>{
-    const sc=(id==='maja_checkin')? Scripts.maja_checkin : Scripts[id];
-    const target=(id==='maja_checkin')?'maja':id;
-    setChat(target,c=>{
-      if(!sc) return c;
-      if(c.messages.length===0 && c.queue.length===0){
-        const s=sc.start;
-        return {...c,queue:[{from:s.from,text:s.text,me:false}],step:'started'};
-      } return c;
-    });
-  };
-
-  // przycisk „Dalej” – zawsze ściąga JEDEN element z kolejki; gdy kolejka się wyzeruje → pojawiają się WYBORY
-  const next=(id)=>{
-    const target=(id==='maja_checkin')?'maja':id;
-    const sc=(id==='maja_checkin')? Scripts.maja_checkin : Scripts[id];
-    setChat(target,c=>{
-      if(!c.queue.length) return c;
-      const [msg,...rest]=c.queue;
-      const messages=[...c.messages];
-      if(msg.system){ applySystem(msg); }
-      else { messages.push(msg); }
-      let {choices, step} = c;
-      // jeżeli właśnie wyczerpaliśmy kolejkę, pokaż choices
-      if(rest.length===0){
-        if(step==='started' || step==='await' || step==='follow'){
-          // jeśli to Riven po pierwszej turze → wstrzykniemy followup w useEffect niżej
-          choices = (sc.choices||[]);
-          step = (id==='riven' && c.step!=='follow') ? 'await' : c.step;
-        }
-      }
-      return {...c,messages,queue:rest,choices,step};
-    });
-  };
-
-  const choose=(id,choiceId)=>{
-    const sc=(id==='maja_checkin')? Scripts.maja_checkin : Scripts[id];
-    const target=(id==='maja_checkin')?'maja':id;
-    const pick=(sc.choices||[]).find(x=>x.id===choiceId);
-    if(!pick) return;
-
-    // dodaj moją wypowiedź
-    setChat(target,c=>({...c,messages:[...c.messages,{from:'You',text:pick.text,me:true}],choices:[]}));
-
-    // punkty (jeśli są)
-    if(pick.aff){
-      setAff(prev=>({...prev,
-        riven:(prev.riven||0)+(pick.aff.riven||0),
-        noah:(prev.noah||0)+(pick.aff.noah||0),
-        victor:(prev.victor||0)+(pick.aff.victor||0),
-      }));
-    }
-
-    // CG (tu tylko hak eventu — grafiki podłączymy w galerii w R2)
-    // if(pick.cg){ ... }
-
-    // odpowiedzi na wybór → do kolejki
-    const bundle=(sc.replies||{})[choiceId]||[];
-    setChat(target,c=>({...c,queue:[...c.queue,...bundle]}));
-
-    // po wyborze wątku Rivena, gdy skończą się reply, wstrzykniemy check-in Maji (poniżej w useEffect)
-  };
-
-  // Po zakończeniu pierwszej sekwencji Rivena → pojawi się followup (drugi set wyborów)
-  useEffect(()=>{
-    const c=chats.riven;
-    if(!c) return;
-    // Jeśli nie ma kolejki, nie ma aktywnych wyborów i są już jakieś wiadomości, a jeszcze nie pokazaliśmy 'follow'
-    if(c.queue.length===0 && c.choices.length===0 && c.messages.length>0 && c.step!=='follow'){
-      setChats(prev=>({...prev,riven:{...prev.riven,choices:Scripts.riven.followupChoices,step:'follow'}}));
-    }
-    // Jeśli właśnie zakończyliśmy followup (brak kolejki i brak choices, a step=='follow') → wstrzyknij check-in Maji i unlock Noaha (robią to systemowe zdarzenia z replies, ale dmuchamy na zimne)
-    if(c.step==='follow' && c.queue.length===0 && c.choices.length===0){
-      if(!flags.maja_checkin){
-        const s=Scripts.maja_checkin.start;
-        setChats(prev=>({...prev, maja:{...prev.maja, queue:[...prev.maja.queue, {from:s.from,text:s.text,me:false}]}}));
-      }
-    }
-  },[chats.riven, flags.maja_checkin]);
-
-  // Start → modal z imieniem → dom
-  const startGame=()=>{ setStarted(true); setAskName(true); };
-  const saveName=(nm)=>{
-    setAskName(false); setMcName(nm||'You'); localStorage.setItem('heartline_name', nm||'You');
-    setScreen('home');
-    // Po 3s powiadomienie od Maji + start jej sceny
-    setTimeout(()=>{
-      setUnlocked(u=>({...u,maja:true}));
-      setBadges(b=>({...b,maja:(b.maja||0)+1}));
-      ensureStart('maja');
-      setToast('New message from Maya'); setTimeout(()=>setToast(null),1400);
-    }, 3000);
-  };
-
-  const contacts = CONTACTS;
-
-  return (
-    <div className="stage">
-      <div className="phone">
-        <StatusBar/>
-        <div className="screen">
-          <div className="content">
-            {!started && <Start onStart={startGame}/>}
-            {askName && <NameModal defName={mcName} onCancel={()=>setAskName(false)} onOK={saveName}/>}
-
-            {started && !askName && screen==='home' &&
-              <Home unreadTotal={Object.values(badges).reduce((a,b)=>a+b,0)}
-                openMessages={()=>setScreen('messages')}
-                openGallery={()=>{}}/>}
-
-            {started && !askName && screen==='messages' &&
-              <MessagesList contacts={contacts}
-                            unlocked={unlocked}
-                            chats={chats}
-                            unread={badges}
-                            onOpenChat={(id)=>{ setCurrentId(id); setScreen('chat'); ensureStart(id); setBadges(b=>({...b,[id]:0})); }}
-                            onBack={()=>setScreen('home')}/>}
-
-            {started && !askName && screen==='chat' && currentId &&
-              <ChatView contact={contacts.find(c=>c.id===currentId)} mcName={mcName}
-                        chat={chats[currentId].messages}
-                        queue={chats[currentId].queue}
-                        choices={chats[currentId].choices}
-                        next={()=>next(currentId)}
-                        choose={(cid)=>choose(currentId,cid)}
-                        onBack={()=>setScreen('messages')} />}
-
-            {toast && <div className="toast">🌸 {toast}</div>}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App/>);
+function choose(next, btn){
+  const chat = document.getElementById("chat");
+  const div = btn.parentNode;
+  div.remove();
+  const bubble = document.createElement("div");
+  bubble.className = "msg me";
+  bubble.innerText = btn.innerText;
+  chat.appendChild(bubble);
+  chat.scrollTop = chat.scrollHeight;
+  setTimeout(()=>nextLine(next), 1000);
+}
+
+function nextLine(customStep){
+  if(lock) return;
+  lock = true;
+  step = customStep || step+1;
+  if(step >= script.length) return;
+  setTimeout(()=>{
+    addMessage(script[step]);
+    lock = false;
+  }, 800);
+}
 </script>
 </body>
 </html>
