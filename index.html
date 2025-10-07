@@ -389,16 +389,43 @@ $('appMessages').onclick=()=>{sndClick.play(); showInbox();};
 $('badgeMaya').style.display = ST.threads.some(t=>t.id==='maya' && t.unread) ? 'inline-block':'none';
 $('homeNotif').textContent = ST.threads.some(t=>t.id==='maya' && t.unread) ? 'New message from Maya 💬' : 'No new messages';
 
-/* ===== Enter game immediately if player set (ułatwia testy) ===== */
+// Start screen should always show; if jest zapis, pokaż Continue + Reset
 window.addEventListener('load', ()=>{
-  if(ST.player && ST.player!=='You'){
-    Sects.start.style.display='none'; Sects.home.style.display='block';
+  const hasSave = ST.player && ST.player !== 'You';
+  // pokaż START zawsze
+  Object.values(Sects).forEach(s=>s.style.display='none');
+  Sects.start.style.display='block';
+
+  // pokaż/ukryj Continue + Reset
+  const btnCont = $('btnContinue');
+  const btnReset = $('btnReset');
+  if(hasSave){
+    btnCont.style.display='inline-block';
+    btnReset.style.display='inline-block';
+  }else{
+    btnCont.style.display='none';
+    btnReset.style.display='none';
+  }
+
+  // Continue -> na ekran telefonu z zachowaniem stanu
+  btnCont.onclick = ()=>{
+    sndClick.play();
+    Sects.start.style.display='none';
+    Sects.home.style.display='block';
     $('icoMessages').src=Icons.appMsg; $('icoPhone').src=Icons.appPhone; $('icoGallery').src=Icons.appGal;
     $('icoClock').src=Icons.appClock; $('icoNotes').src=Icons.appNotes; $('icoSettings').src=Icons.appSet;
     setWallpaper();
     $('badgeMaya').style.display = ST.threads.some(t=>t.id==='maya' && t.unread) ? 'inline-block':'none';
     $('homeNotif').textContent = ST.threads.some(t=>t.id==='maya' && t.unread) ? 'New message from Maya 💬' : 'No new messages';
-  }
+  };
+
+  // Reset -> czyści zapis i odświeża
+  btnReset.onclick = ()=>{
+    sndClick.play();
+    localStorage.removeItem(STORAGE_KEY);
+    ST = loadState();
+    location.reload();
+  };
 });
 </script>
 </body>
