@@ -1,432 +1,418 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Heartline — Romance Messenger (Demo)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Heartline — Romance Messenger</title>
 <style>
   :root{
-    --ink:#111827; --muted:#6b7280;
-    --glass:rgba(255,255,255,.55);
-    --card:rgba(255,255,255,.92);
-    --pink:#ff8fb8; --vio:#8b5cf6;
+    --bg: #0c0e16;
+    --panel:#101423;
+    --soft:#f8e8f0;
+    --pink:#f19bb8;
+    --pink2:#ee7aa7;
+    --pill:#ffd1df;
+    --ink:#1d2133;
+    --meFrom:#5a6bf7; --meTo:#7f9bff;
+    --them:#ffffff; --bubble:#ffffff;
+    --shadow: 0 10px 30px rgba(0,0,0,.25);
+    --radius: 18px;
   }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,-apple-system,Segoe UI,Roboto}
-  body{background:linear-gradient(180deg,#ffe0ec,#eef1ff);display:flex;align-items:center;justify-content:center;padding:10px}
-  .phone{width:min(375px,100%);height:min(812px,calc(100vh - 20px));border-radius:28px;background:#000;border:4px solid #0b0f1a;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 16px 40px rgba(0,0,0,.35)}
-  .status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#0b1220;color:#e5e7eb;font-weight:700}
-  .screen{position:relative;flex:1;background:#fff}
-  .content{position:absolute;inset:0;display:flex;flex-direction:column}
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{height:100%; margin:0; background:#0b0d15; color:#242424; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, "Noto Sans", "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";}
+  /* phone frame */
+  .app{
+    height:100dvh; max-width:430px; margin:0 auto; position:relative; background:linear-gradient(180deg,#0e1220 0%,#0e1220 100%);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  /* wallpaper */
+  .wall{
+    position:absolute; inset:0; background:
+      linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.35)),
+      url('assets/wallpapers/sakura-closeup.jpg') center/cover no-repeat;
+    filter: blur(8px) saturate(1.05);
+    transform: scale(1.06);
+  }
+  /* screens */
+  .screen{ position:absolute; inset:0; display:none; }
+  .screen.active{ display:block; }
+  .glass{ position:absolute; inset:12px; border-radius:24px; background:rgba(255,255,255,.78); backdrop-filter: blur(14px); box-shadow: var(--shadow); overflow:hidden; }
+  /* status bar */
+  .status{ position:absolute; top:6px; left:0; right:0; height:26px; display:flex; align-items:center; justify-content:space-between; color:#fff; padding:0 16px; font-weight:600; font-size:14px; z-index:2 }
+  .status .pill{ background:rgba(0,0,0,.35); padding:2px 10px; border-radius:999px; }
 
-  /* START */
-  .start{position:absolute;inset:0;background:url('assets/start_screen.png') center/cover no-repeat, radial-gradient(120% 90% at 50% 10%, #ffe6f2 0%, #f7f2ff 60%, #ffffff 100%);}
-  .start .shade{position:absolute;inset:0;background:linear-gradient(to top, rgba(255,255,255,.92) 8%, rgba(255,255,255,0) 40%)}
-  .start .box{position:absolute;left:0;right:0;bottom:32px;display:flex;flex-direction:column;align-items:center;gap:10px}
-  .logo{height:56px;background:url('assets/heartline_logo.png') center/contain no-repeat;filter:drop-shadow(0 2px 10px rgba(0,0,0,.18))}
-  .btn{padding:12px 26px;border:none;border-radius:22px;background:linear-gradient(90deg,#ff8fb8,#8b5cf6);color:#fff;font-weight:800;box-shadow:0 8px 20px rgba(139,92,246,.35);font-size:17px;cursor:pointer}
+  /* START screen */
+  .start-wrap{ position:absolute; inset:0; display:grid; place-items:center; padding:18px;}
+  .start-card{
+    width:100%; height:100%; border-radius:24px; overflow:hidden; box-shadow: var(--shadow); position:relative;
+    background: #f8d9e6 url('assets/logo-heartline.png') top 22px center / 60% auto no-repeat;
+  }
+  .start-illustration{
+    position:absolute; inset:0; background:
+      linear-gradient(180deg, rgba(255,255,255,.0) 0%, rgba(255,255,255,.15) 65%, rgba(255,255,255,.35) 100%),
+      url('assets/start/cover.jpg') center/cover no-repeat;
+    /* Jeśli nie masz cover.jpg, usuń to tło — przycisk nadal zadziała */
+  }
+  .start-btn{
+    position:absolute; left:50%; transform:translateX(-50%);
+    bottom:24px; padding:16px 28px; border-radius:999px; border:0; cursor:pointer;
+    background: linear-gradient(180deg, var(--pink) 0%, var(--pink2) 100%);
+    color:#fff; font-weight:800; font-size:22px; letter-spacing:.3px; box-shadow: var(--shadow);
+  }
 
-  /* NAME */
-  .name{position:absolute;inset:0;padding:16px;display:none}
-  .name .ghost{flex:1;background:url('assets/start_screen.png') center 20%/cover no-repeat;opacity:.22;border-radius:16px}
-  .card{background:var(--card);border-radius:18px;padding:16px;margin-top:10px;box-shadow:0 10px 26px rgba(0,0,0,.15)}
-  .row{display:flex;gap:10px;align-items:center}
-  input[type=text]{flex:1;padding:12px 14px;border:2px solid #ffd1e3;border-radius:12px;font-size:16px;outline:none}
-  .ok{padding:10px 16px;border:none;border-radius:12px;background:#ff8fb8;color:#fff;font-weight:800;cursor:pointer}
+  /* NAME dialog */
+  .name-modal{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(14,18,32,.55); z-index:20; }
+  .name-modal.show{ display:flex;}
+  .card{ width:92%; max-width:360px; border-radius:18px; background:#fff; box-shadow: var(--shadow); padding:18px; text-align:center;}
+  .face{ width:96px; height:96px; border-radius:50%; background:#eee url('assets/avatars/mc.png') center/cover no-repeat; margin: 6px auto 12px; }
+  .card h3{ margin:0 0 10px; font-size:20px; color:#222;}
+  .field{ display:flex; gap:10px; align-items:center; }
+  .field input{ flex:1; border:2px solid #eee; border-radius:12px; padding:12px 14px; font-size:16px;}
+  .btn{ padding:10px 16px; border-radius:12px; border:0; background:#111827; color:#fff; font-weight:700; }
+  .muted{ color:#777; font-size:12px; margin-top:8px; }
 
-  /* HOME */
-  .home{position:absolute;inset:0;padding:14px;display:none;background:radial-gradient(120% 90% at 50% 10%, #ffe6f2 0%, #f7f2ff 60%, #ffffff 100%)}
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:6px}
-  .app{background:var(--glass);backdrop-filter:blur(6px);border-radius:18px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;color:#1f2937;position:relative;cursor:pointer}
-  .app img{width:34px;height:34px;border-radius:10px;object-fit:cover;background:#fff}
-  .app small{font-size:12px}
-  .badge{position:absolute;top:6px;right:8px;background:#ef4444;color:#fff;border-radius:12px;padding:2px 6px;font-size:11px;font-weight:800;display:none}
-  .notif{margin-top:auto;background:rgba(255,255,255,.8);border-radius:14px;padding:8px 12px;font-size:12px;color:#374151}
+  /* PHONE HOME */
+  .home{ padding:18px; display:flex; flex-direction:column; gap:16px;}
+  .dock{ display:grid; grid-template-columns: repeat(4,1fr); gap:14px;}
+  .tile{
+    background:rgba(255,255,255,.95); border-radius:18px; padding:14px 10px; text-align:center; box-shadow:0 6px 18px rgba(0,0,0,.09);
+  }
+  .ico{ width:56px; height:56px; margin:0 auto 8px; border-radius:16px; display:grid; place-items:center; font-size:26px; color:#fff; }
+  .i-msg{ background:linear-gradient(180deg,#ff7bb2,#ff4f98); }
+  .i-phone{ background:linear-gradient(180deg,#50d890,#24b26a); }
+  .i-gallery{ background:linear-gradient(180deg,#8b9fff,#6c7cff); }
+  .i-clock{ background:linear-gradient(180deg,#ffc86a,#ff9d3f); }
+  .i-notes{ background:linear-gradient(180deg,#9ee1ff,#55c7f5); }
+  .i-settings{ background:linear-gradient(180deg,#c7b2ff,#a086ff); }
+  .badge{ position:absolute; margin-left:36px; margin-top:-6px; background:#ff3b62; color:#fff; border-radius:999px; padding:2px 6px; font-size:12px; font-weight:800; box-shadow:0 2px 8px rgba(0,0,0,.2); }
+  .toast{ background:#fff; border-radius:14px; padding:10px 12px; box-shadow: var(--shadow); }
 
-  /* LIST / CHAT */
-  .panel{position:absolute;inset:0;background:#fff;display:none;flex-direction:column}
-  .topbar{height:50px;display:flex;align-items:center;gap:10px;padding:0 12px;border-bottom:1px solid #f3f4f6}
-  .back{font-weight:900;cursor:pointer}
-  .list{flex:1;overflow:auto}
-  .cell{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #f3f4f6;cursor:pointer}
-  .avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #ffd1e3;background:#fff}
-  .title{font-weight:800} .sub{font-size:12px;color:#6b7280}
-  .chat{flex:1;overflow:auto;padding:10px;background:linear-gradient(#fde2f3,#fff)}
-  .bubble{max-width:78%;padding:11px 14px;border-radius:16px;margin:6px 0;line-height:1.35}
-  .them{background:#fff;border:1px solid #f0f0f0;align-self:flex-start}
-  .me{background:#dbeafe;align-self:flex-end}
-  .choices{padding:10px;display:flex;flex-direction:column;gap:8px}
-  .choices button{padding:10px 14px;border:none;border-radius:14px;background:#ff8fb8;color:#fff;font-weight:800;cursor:pointer}
-  .hidden{display:none!important}
+  /* MESSAGES list */
+  .messages{ padding:12px; display:flex; flex-direction:column; gap:10px;}
+  .msg-row{ background:#fff; border-radius:16px; padding:10px 12px; display:flex; align-items:center; gap:12px; box-shadow:0 6px 14px rgba(0,0,0,.08); }
+  .avatar{ width:46px; height:46px; border-radius:50%; background:#eee center/cover no-repeat; display:grid; place-items:center; font-weight:800; color:#fff; }
+  .a-maya{ background-image:url('assets/avatars/maya.png'); background-color:#f39bb1;}
+  .a-riven{ background-image:url('assets/avatars/riven.png'); background-color:#7a83ff;}
+  .a-noah{ background-image:url('assets/avatars/noah.png'); background-color:#7ed786;}
+  .a-victor{ background-image:url('assets/avatars/victor.png'); background-color:#b1b6ff;}
+  .who{ font-weight:800; color:#1d2133;}
+  .prev{ color:#5a617a; font-size:13px;}
+
+  /* CHAT */
+  .nav{ height:54px; display:flex; align-items:center; justify-content:space-between; padding:0 12px; background:rgba(255,255,255,.95); border-bottom:1px solid #eee;}
+  .nav .title{ font-weight:800;}
+  .chat{ position:absolute; inset:54px 0 62px 0; overflow:auto; padding:14px; background:
+     linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.9));
+  }
+  .bubble{ max-width:78%; margin:10px 0; padding:11px 14px; border-radius:16px; background:#fff; box-shadow:0 6px 14px rgba(0,0,0,.06); }
+  .me{ margin-left:auto; background:linear-gradient(180deg,var(--meFrom),var(--meTo)); color:#fff;}
+  .from{ font-size:12px; font-weight:700; color:#7b84a2; margin-bottom:4px;}
+  .choices{ display:flex; flex-direction:column; gap:10px; margin-top:12px;}
+  .choice{ border:0; border-radius:999px; padding:12px 14px; background: linear-gradient(180deg,#ff8fb5,#ff6aa3); color:#fff; font-weight:800; }
+  .next{ position:absolute; left:12px; right:12px; bottom:8px; height:46px; border-radius:999px; background:#111827; color:#fff; border:0; font-weight:800; box-shadow: var(--shadow); }
+
+  /* top bar inside phone */
+  .phone-bar{ position:absolute; top:0; left:0; right:0; height:36px; display:flex; align-items:center; justify-content:space-between; padding:0 14px; color:#fff; font-weight:700;}
+  .phone-bar .chip{ background:rgba(0,0,0,.35); padding:4px 10px; border-radius:999px;}
+
+  /* helpers */
+  .hidden{ display:none !important;}
+  .tap{ cursor:pointer; }
 </style>
 </head>
 <body>
-  <div class="phone">
-    <div class="status">
-      <div id="clock">--:--</div>
-      <small id="date">—</small>
-      <small>92%</small>
-    </div>
-    <div class="screen">
-      <div class="content">
-        <!-- START -->
-        <section id="start" class="start">
-          <div class="box">
-  <div class="logo"></div>
-  <button class="btn" id="btnStart">Start 💬</button>
-  <button class="btn" id="btnContinue" style="display:none;opacity:.9">Continue ▶</button>
-  <button class="btn" id="btnReset" style="display:none;background:#9ca3af">Reset save ↺</button>
-</div>
-        </section>
+<div class="app" id="app">
+  <div class="wall"></div>
 
-        <!-- NAME -->
-        <section id="name" class="name">
-          <div class="logo" style="margin:6px auto 8px;height:44px"></div>
-          <div class="ghost"></div>
-          <div class="card">
-            <div style="font-size:18px;font-weight:800;margin-bottom:10px">Enter your name</div>
-            <div class="row">
-              <input id="nameInput" type="text" placeholder="e.g., Kara" maxlength="16">
-              <button class="ok" id="okName">OK</button>
-            </div>
-            <div style="color:#6b7280;font-size:12px;margin-top:6px">Your name appears in dialogues.</div>
-          </div>
-        </section>
+  <div class="status"><span class="pill" id="clock">--:--</span><span class="pill" id="datepill"></span><span class="pill">92%</span></div>
 
-        <!-- HOME -->
-        <section id="home" class="home">
-          <div class="grid">
-            <div class="app" id="appMessages">
-              <img id="icoMessages" alt=""/>
-              <small>Messages</small>
-              <span class="badge" id="badgeMaya">1</span>
-            </div>
-            <div class="app"><img id="icoPhone" alt=""/><small>Phone</small></div>
-            <div class="app"><img id="icoGallery" alt=""/><small>Gallery</small></div>
-            <div class="app"><img id="icoClock" alt=""/><small>Clock</small></div>
-            <div class="app"><img id="icoNotes" alt=""/><small>Notes</small></div>
-            <div class="app"><img id="icoSettings" alt=""/><small>Settings</small></div>
-          </div>
-          <div class="notif" id="homeNotif">Waiting for messages…</div>
-        </section>
-
-        <!-- INBOX -->
-        <section id="inbox" class="panel">
-          <div class="topbar"><span class="back" id="backToHome">◀</span><div style="font-weight:800">Messages</div></div>
-          <div class="list" id="threadList"></div>
-        </section>
-
-        <!-- CHAT -->
-        <section id="chat" class="panel">
-          <div class="topbar">
-            <span class="back" id="backToInbox">◀</span>
-            <img class="avatar" id="chatAvatar" alt="">
-            <div id="chatTitle" style="font-weight:800">Chat</div>
-          </div>
-          <div class="chat" id="chatBody"></div>
-        </section>
+  <!-- START -->
+  <section class="screen active" id="start">
+    <div class="start-wrap">
+      <div class="start-card">
+        <div class="start-illustration"></div>
+        <button class="start-btn" id="btnStart">Start</button>
       </div>
     </div>
-  </div>
+    <div class="name-modal" id="nameModal">
+      <div class="card">
+        <div class="face"></div>
+        <h3>Enter your name</h3>
+        <div class="field">
+          <input id="playerName" maxlength="16" placeholder="Your name" />
+          <button class="btn" id="okName">OK</button>
+        </div>
+        <div class="muted">Your name will appear in English dialogues.</div>
+      </div>
+    </div>
+  </section>
 
-  <!-- AUDIO -->
-  <audio id="sndNotif" preload="auto"
-    src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_64a8e0e3ce.mp3?filename=notification-113724.mp3"></audio>
-  <audio id="sndClick" preload="auto"
-    src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_0bb7d7f2d9.mp3?filename=button-124476.mp3"></audio>
+  <!-- PHONE HOME -->
+  <section class="screen" id="home">
+    <div class="phone-bar"><span class="chip" id="barDate">Tue, 7 Oct</span><span class="chip">92%</span></div>
+    <div class="glass">
+      <div class="home">
+        <div class="dock">
+          <div class="tile tap" id="openMessages">
+            <div class="ico i-msg">💬</div>
+            <div style="position:relative;font-weight:800;">Messages <span class="badge hidden" id="badgeMsg">1</span></div>
+          </div>
+          <div class="tile"><div class="ico i-phone">📞</div><div style="font-weight:800;">Phone</div></div>
+          <div class="tile"><div class="ico i-gallery">🖼️</div><div style="font-weight:800;">Gallery</div></div>
+          <div class="tile"><div class="ico i-clock">⏰</div><div style="font-weight:800;">Clock</div></div>
+          <div class="tile"><div class="ico i-notes">📝</div><div style="font-weight:800;">Notes</div></div>
+          <div class="tile"><div class="ico i-settings">⚙️</div><div style="font-weight:800;">Settings</div></div>
+        </div>
+        <div class="toast" id="homeToast">New message from Maya 💬</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MESSAGES LIST -->
+  <section class="screen" id="inbox">
+    <div class="glass">
+      <div class="nav">
+        <button class="btn" id="backToHome">◀</button>
+        <div class="title">Messages</div>
+        <div style="width:64px"></div>
+      </div>
+      <div class="messages" id="threadList">
+        <!-- threads inserted by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAT -->
+  <section class="screen" id="chat">
+    <div class="glass">
+      <div class="nav">
+        <button class="btn" id="backToInbox">◀</button>
+        <div class="title" id="chatTitle">Chat</div>
+        <div class="avatar" id="chatAvatar" style="width:34px;height:34px;"></div>
+      </div>
+      <div class="chat" id="chatScroll"></div>
+      <button class="next" id="btnNext">Next ▶</button>
+    </div>
+  </section>
+
+</div>
 
 <script>
-/* ===== Helpers ===== */
-const $ = id => document.getElementById(id);
-const ck=$('clock'), dt=$('date');
-function tick(){const d=new Date(); ck.textContent=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); dt.textContent=d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}
-tick(); setInterval(tick,1000);
-
-function testImg(url){return new Promise(res=>{const i=new Image();i.onload=()=>res(true);i.onerror=()=>res(false);i.src=url;});}
-function dataSvg(svg){return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);}
-
-/* Icons (różne, nie same serduszka) */
-const SVG = {
-  msg: dataSvg(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' x2='1'><stop stop-color='#ff8fb8'/><stop offset='1' stop-color='#8b5cf6'/></linearGradient></defs><rect rx='12' ry='12' width='64' height='64' fill='url(#g)'/><path fill='#fff' d='M14 20h36v18H28l-8 6v-6H14z'/><circle cx='24' cy='29' r='2.8' fill='#ffeff6'/><circle cx='32' cy='29' r='2.8' fill='#ffeff6'/><circle cx='40' cy='29' r='2.8' fill='#ffeff6'/></svg>`),
-  phone: dataSvg(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' x2='1'><stop stop-color='#92e3a9'/><stop offset='1' stop-color='#36c4a0'/></linearGradient></defs><rect rx='12' ry='12' width='64' height='64' fill='url(#g)'/><path fill='#fff' d='M23 15l6 8-4 4a32 32 0 0 0 12 12l4-4 8 6-2 7c-1 3-4 5-7 5A36 36 0 0 1 15 25c0-3 2-6 5-7z'/></svg>`),
-  gallery: dataSvg(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' x2='1'><stop stop-color='#ffd27f'/><stop offset='1' stop-color='#ff8a5c'/></linearGradient></defs><rect rx='12' ry='12' width='64' height='64' fill='url(#g)'/><circle cx='22' cy='22' r='6' fill='#fff'/><path fill='#fff' d='M14 46l12-12 8 8 6-6 10 10z'/></svg>`),
-  clock: dataSvg(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' x2='1'><stop stop-color='#a3b8ff'/><stop offset='1' stop-color='#6b7cff'/></linearGradient></defs><rect rx='12' ry='12' width='64' height='64' fill='url(#g)'/><circle cx='32' cy='32' r='18' fill='#fff'/><path d='M32 18v14l10 6' stroke='#6b7cff' stroke-width='4' stroke-linecap='round' fill='none'/></svg>`),
-  notes: dataSvg(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' x2='1'><stop stop-color='#ffe297'/><stop offset='1' stop-color='#ffb7b2'/></linearGradient></defs><rect rx='12' ry='12' width='64' height='64' fill='url(#g)'/><rect x='16' y='16' width='32' height='32' rx='6' fill='#fff'/><path d='M22 24h20M22 30h20M22 36h14' stroke='#ff8fb8' stroke-width='3' stroke-linecap='round'/></svg>`),
-  gear: dataSvg(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' x2='1'><stop stop-color='#d1d5db'/><stop offset='1' stop-color='#9ca3af'/></linearGradient></defs><rect rx='12' ry='12' width='64' height='64' fill='url(#g)'/><path fill='#fff' d='M32 22a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0-10l4 6 7-2 2 7 7 2-2 7 6 4-6 4 2 7-7 2-2 7-7-2-4 6-4-6-7 2-2-7-7-2 2-7-6-4 6-4-2-7 7-2 2-7 7 2z'/></svg>`)
+/* ========== CLOCK / DATE ========== */
+function fmt2(n){return n.toString().padStart(2,'0')}
+function tick(){
+  const d=new Date();
+  document.getElementById('clock').textContent = `${fmt2(d.getHours())}:${fmt2(d.getMinutes())}`;
+  document.getElementById('datepill').textContent = d.toLocaleDateString(undefined,{weekday:'short', day:'numeric', month:'short'});
+  document.getElementById('barDate').textContent = d.toLocaleDateString(undefined,{weekday:'short', day:'numeric', month:'short'});
 }
+setInterval(tick,1000); tick();
 
-/* Fallback/PNG icon paths for people (możesz podmienić plikami PNG w assets/icons) */
-const Icons = {
-  appMsg: SVG.msg, appPhone: SVG.phone, appGal: SVG.gallery, appClock: SVG.clock, appNotes: SVG.notes, appSet: SVG.gear,
-  maja:'assets/icons/icon_maja.png',
-  riven:'assets/icons/icon_riven.png',
-  noah:'assets/icons/icon_noah.png',
-  victor:'assets/icons/icon_victor.png',
-  mc:'assets/icons/icon_mc.png'
-};
+/* ========== SIMPLE STORE ========== */
+const SAVE_KEY='heartline-save';
+let ST = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
+ST.playerName ??= ''; ST.flags ??= {}; ST.threads ??= {}; ST.queue ??= [];
+function save(){ localStorage.setItem(SAVE_KEY, JSON.stringify(ST)); }
 
-/* ===== STATE (persist in localStorage) ===== */
-const STORAGE_KEY='heartline_state_v1';
-function loadState(){
-  const d=localStorage.getItem(STORAGE_KEY);
-  if(d) try{ return JSON.parse(d);}catch(e){}
-  return {
-    player:'You',
-    unlocked:{riven:false},
-    threads:[{id:'maya', title:'Maya', avatar:'maja', preview:'Hey! Guess who texted me today? 👀', unread:true}],
-    transcripts:{ maya:[], riven:[] },
-    pointers:{ maya:0, riven:0 }
-  };
-}
-function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(ST)); }
-let ST = loadState();
+/* ========== NAV HELPERS ========== */
+const screens = {start:qs('#start'), home:qs('#home'), inbox:qs('#inbox'), chat:qs('#chat')};
+function show(id){ for(const k in screens){ screens[k].classList.toggle('active', k===id); } }
+function qs(sel, root=document){ return root.querySelector(sel); }
+function el(tag, cls, txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt) e.textContent=txt; return e; }
 
-/* ===== Elements ===== */
-const Sects = { start:$('start'), name:$('name'), home:$('home'), inbox:$('inbox'), chat:$('chat') };
-const sndNotif=$('sndNotif'), sndClick=$('sndClick');
-
-/* ===== Start flow ===== */
-$('btnStart').onclick=()=>{sndClick.play(); Sects.start.style.display='none'; Sects.name.style.display='block';};
-$('okName').onclick=()=>beginGame();
-
-async function beginGame(){
-  const v = ($('nameInput').value||'You').trim();
-  ST.player = v; saveState();
-  Sects.name.style.display='none';
-  Sects.home.style.display='block';
-
-  // różne ikonki
-  $('icoMessages').src=Icons.appMsg; $('icoPhone').src=Icons.appPhone; $('icoGallery').src=Icons.appGal;
-  $('icoClock').src=Icons.appClock; $('icoNotes').src=Icons.appNotes; $('icoSettings').src=Icons.appSet;
-
-  // tapeta z assets (obsługujemy nazwy z/bez spacji i różne rozszerzenia)
-  setWallpaper();
-
-  // badge i powiadomienie
-  $('badgeMaya').style.display = ST.threads.some(t=>t.id==='maya' && t.unread) ? 'inline-block':'none';
-  $('homeNotif').textContent = ST.threads.some(t=>t.id==='maya' && t.unread) ? 'New message from Maya 💬' : 'No new messages';
-
-  // wejście do wiadomości
-  $('appMessages').onclick=()=>{sndClick.play(); showInbox();};
-}
-
-/* Tapeta — próbujemy kilka nazw, najlepiej nazwij plik: assets/sakura_closeup.jpg */
-async function setWallpaper(){
-  const candidates=[
-    'assets/Sakura Close-up.jpg','assets/Sakura%20Close-up.jpg',
-    'assets/sakura_closeup.jpg','assets/sakura_closeup.png','assets/sakura_anime_closeup.png'
-  ];
-  for (const p of candidates){
-    /* eslint-disable no-await-in-loop */
-    if(await testImg(p)){ Sects.home.style.background=`url('${p}') center/cover no-repeat`; return; }
-  }
-  // zostaje gradient
-}
-
-/* ===== Inbox ===== */
-function showInbox(){
-  Sects.home.style.display='none'; Sects.chat.style.display='none';
-  Sects.inbox.style.display='flex';
-  const list=$('threadList'); list.innerHTML='';
-  ST.threads.forEach(async t=>{
-    const cell=document.createElement('div'); cell.className='cell';
-    const ava=document.createElement('img'); ava.className='avatar';
-    // avatar PNG fallback
-    const map={maja:Icons.maja,riven:Icons.riven,noah:Icons.noah,victor:Icons.victor,mc:Icons.mc};
-    if(await testImg(map[t.avatar])) ava.src=map[t.avatar];
-    else ava.src = dataSvg(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'>
-      <defs><radialGradient id='g' cx='50%' cy='30%' r='80%'><stop stop-color='#ffd1e3'/><stop offset='1' stop-color='#ff8fb8'/></radialGradient></defs>
-      <circle cx='40' cy='40' r='38' fill='url(#g)'/><text x='40' y='50' font-size='26' font-weight='800' text-anchor='middle' fill='#fff'>${t.title[0]}</text></svg>`);
-    const info=document.createElement('div');
-    info.innerHTML=`<div class="title">${t.title}</div><div class="sub">${t.preview||''}</div>`;
-    cell.append(ava,info);
-    if(t.unread){ const b=document.createElement('span'); b.className='badge'; b.style.display='inline-block'; b.textContent='1'; cell.appendChild(b); }
-    cell.onclick=()=>{sndClick.play(); openChat(t.id);};
-    list.appendChild(cell);
-  });
-
-  $('backToHome').onclick=()=>{Sects.inbox.style.display='none'; Sects.home.style.display='block';};
-}
-
-/* ===== Story scripts (Chapter 1 – slice) ===== */
-const Story = {
-  maya: [
-    { from:'Maya', text:'Hey! Guess who texted me last night? 👀', choice:[
-      { text:"Don’t keep me in suspense!", next:1 },
-      { text:"Please don’t say Riven…", next:1 },
-      { text:"Not now, Maya.", next:1 },
-    ]},
-    { from:'Maya', text:'Riven. He texted ME instead of you. What is he even doing? 😤', next:2 },
-    { from:'Maya', text:'Anyway… you good to talk about him?', choice:[
-      { text:'Maybe later.', next:3 },
-      { text:'Yeah, tell me.', next:3 },
-    ]},
-    { from:'Maya', text:'Okay. Also… he asked if you were still mad.', next:'UNLOCK_RIVEN' },
-    { from:'Maya', text:'Text him if you want. I’ll be here.', next:null },
-  ],
-  riven: [
-    { from:'Riven', text:'You still awake?', next:1 },
-    { from:'Riven', text:'Maya said you’re still in town. Do you ever think about… that night?', choice:[
-      { text:'I try not to.', next:2 },
-      { text:'Every day.', next:2 },
-      { text:'Delete my number.', next:2 },
-    ]},
-    { from:'Riven', text:'Figures…', next:null },
-  ]
-};
-
-function ensureThread(id,title,avatar){
-  if(!ST.threads.find(t=>t.id===id)){
-    ST.threads.push({id,title,avatar,preview:'',unread:true});
-  }
-}
-
-/* ===== Chat ===== */
-function openChat(id){
-  Sects.inbox.style.display='none'; Sects.chat.style.display='flex';
-  const title = id==='maya'?'Maya':'Riven';
-  $('chatTitle').textContent=title;
-  const avaMap={maya:'maja', riven:'riven'};
-  setChatAvatar(avaMap[id]);
-
-  // oznacz jako przeczytane
-  const th = ST.threads.find(t=>t.id===id); if(th){ th.unread=false; }
-  $('badgeMaya').style.display='none'; saveState();
-
-  // wypełnij z historii
-  const body=$('chatBody'); body.innerHTML='';
-  (ST.transcripts[id]||[]).forEach(m=>appendBubble(m.text, m.me));
-  // pokaż kolejną scenę lub zakończenie
-  renderStep(id);
-  $('backToInbox').onclick=()=>{Sects.chat.style.display='none'; showInbox();};
-}
-
-async function setChatAvatar(key){
-  const el=$('chatAvatar');
-  const map={maja:Icons.maja,riven:Icons.riven,noah:Icons.noah,victor:Icons.victor,mc:Icons.mc};
-  if(await testImg(map[key])) el.src=map[key];
-  else el.src=dataSvg(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'><defs><radialGradient id='g' cx='50%' cy='30%' r='80%'><stop stop-color='#ffd1e3'/><stop offset='1' stop-color='#ff8fb8'/></radialGradient></defs><circle cx='40' cy='40' r='38' fill='url(#g)'/></svg>`);
-}
-
-function appendBubble(text, me=false){
-  const body=$('chatBody');
-  const b=document.createElement('div'); b.className='bubble ' + (me?'me':'them'); b.textContent=text;
-  body.appendChild(b); body.scrollTop=body.scrollHeight;
-}
-
-function renderChoices(id, list){
-  const body=$('chatBody');
-  const wrap=document.createElement('div'); wrap.className='choices';
-  list.forEach(ch=>{
-    const btn=document.createElement('button'); btn.textContent=ch.text;
-    btn.onclick=()=>{
-      // zapisz wybór jako wiadomość „ja”
-      const msg = { text: (ST.player||'You')+': '+ch.text, me:true };
-      ST.transcripts[id].push(msg); saveState();
-      appendBubble(msg.text, true);
-      ST.pointers[id] = ch.next; saveState();
-      renderStep(id);
-    };
-    wrap.appendChild(btn);
-  });
-  body.appendChild(wrap); body.scrollTop=body.scrollHeight;
-}
-
-function renderNext(id, nextIndex){
-  const body=$('chatBody');
-  const wrap=document.createElement('div'); wrap.className='choices';
-  const btn=document.createElement('button'); btn.textContent='Next ➤';
-  btn.onclick=()=>{ ST.pointers[id]=nextIndex; saveState(); renderStep(id); };
-  wrap.appendChild(btn);
-  body.appendChild(wrap); body.scrollTop=body.scrollHeight;
-}
-
-function clearChoices(){ $('chatBody').querySelectorAll('.choices').forEach(n=>n.remove()); }
-
-function renderStep(id){
-  clearChoices();
-  const p = ST.pointers[id] ?? 0;
-  const scene = Story[id][p];
-  if(!scene){
-    const wrap=document.createElement('div'); wrap.className='choices';
-    const back=document.createElement('button'); back.textContent='Back to inbox';
-    back.onclick=()=>{Sects.chat.style.display='none'; showInbox();};
-    wrap.appendChild(back); $('chatBody').appendChild(wrap); return;
-  }
-
-  // specjalny krok: odblokuj Riven
-  if(scene.next==='UNLOCK_RIVEN'){
-    const line = { text:`${scene.from}: ${scene.text}`, me:false };
-    ST.transcripts[id].push(line); saveState(); appendBubble(line.text,false);
-    // odblokowanie wątku
-    ensureThread('riven','Riven','riven'); ST.unlocked.riven=true;
-    const th=ST.threads.find(t=>t.id==='riven'); if(th){ th.preview='…Are you there?'; th.unread=true; }
-    saveState();
-    try{$('sndNotif').play();}catch(e){}
-    ST.pointers[id] = (p+1); saveState();
-    renderNext(id, ST.pointers[id]);
-    return;
-  }
-
-  // zwykły krok
-  const line = { text:`${scene.from}: ${scene.text}`, me:false };
-  // unikaj duplikatów przy odświeżaniu – dodaj tylko jeśli nie ma identycznego na końcu
-  const last = ST.transcripts[id][ST.transcripts[id].length-1];
-  if(!last || last.text!==line.text){ ST.transcripts[id].push(line); saveState(); appendBubble(line.text,false); }
-
-  if(scene.choice){ renderChoices(id, scene.choice); }
-  else if(scene.next!=null){ renderNext(id, scene.next); }
-  else {
-    const wrap=document.createElement('div'); wrap.className='choices';
-    const back=document.createElement('button'); back.textContent='Back to inbox';
-    back.onclick=()=>{Sects.chat.style.display='none'; showInbox();};
-    wrap.appendChild(back); $('chatBody').appendChild(wrap);
-  }
-}
-
-/* ===== Home entry & initial notif ===== */
-$('appMessages').onclick=()=>{sndClick.play(); showInbox();};
-$('badgeMaya').style.display = ST.threads.some(t=>t.id==='maya' && t.unread) ? 'inline-block':'none';
-$('homeNotif').textContent = ST.threads.some(t=>t.id==='maya' && t.unread) ? 'New message from Maya 💬' : 'No new messages';
-
-// Start screen should always show; if jest zapis, pokaż Continue + Reset
-window.addEventListener('load', ()=>{
-  const hasSave = ST.player && ST.player !== 'You';
-  // pokaż START zawsze
-  Object.values(Sects).forEach(s=>s.style.display='none');
-  Sects.start.style.display='block';
-
-  // pokaż/ukryj Continue + Reset
-  const btnCont = $('btnContinue');
-  const btnReset = $('btnReset');
-  if(hasSave){
-    btnCont.style.display='inline-block';
-    btnReset.style.display='inline-block';
-  }else{
-    btnCont.style.display='none';
-    btnReset.style.display='none';
-  }
-
-  // Continue -> na ekran telefonu z zachowaniem stanu
-  btnCont.onclick = ()=>{
-    sndClick.play();
-    Sects.start.style.display='none';
-    Sects.home.style.display='block';
-    $('icoMessages').src=Icons.appMsg; $('icoPhone').src=Icons.appPhone; $('icoGallery').src=Icons.appGal;
-    $('icoClock').src=Icons.appClock; $('icoNotes').src=Icons.appNotes; $('icoSettings').src=Icons.appSet;
-    setWallpaper();
-    $('badgeMaya').style.display = ST.threads.some(t=>t.id==='maya' && t.unread) ? 'inline-block':'none';
-    $('homeNotif').textContent = ST.threads.some(t=>t.id==='maya' && t.unread) ? 'New message from Maya 💬' : 'No new messages';
-  };
-
-  // Reset -> czyści zapis i odświeża
-  btnReset.onclick = ()=>{
-    sndClick.play();
-    localStorage.removeItem(STORAGE_KEY);
-    ST = loadState();
-    location.reload();
-  };
+/* ========== START FLOW ========== */
+qs('#btnStart').addEventListener('click', ()=>{ qs('#nameModal').classList.add('show'); qs('#playerName').focus(); });
+qs('#okName').addEventListener('click', ()=>{
+  const v = qs('#playerName').value.trim() || 'You';
+  ST.playerName = v; save();
+  bootIfFirstTime();
+  openHome();
 });
+
+function bootIfFirstTime(){
+  if(!ST.flags.booted){
+    // initial inbox: only Maya unlocked
+    ST.flags.booted = true;
+    ST.flags.mayaUnlocked = true;
+    ST.flags.rivenUnlocked = false;
+    ST.flags.noahUnlocked = false;
+    ST.flags.victorUnlocked = false;
+
+    ST.queue.push({from:'Maya', preview:"Hey! Guess who texted me last night? 👀", id:'maya_intro'});
+    save();
+  }
+}
+
+/* ========== HOME ========== */
+function openHome(){
+  show('home');
+  // badge + toast
+  const hasQueue = ST.queue.length>0;
+  qs('#badgeMsg').classList.toggle('hidden', !hasQueue);
+  qs('#homeToast').style.display = hasQueue ? 'block' : 'none';
+}
+qs('#openMessages').addEventListener('click', openInbox);
+qs('#backToHome').addEventListener('click', openHome);
+
+function openInbox(){
+  show('inbox');
+  renderThreads();
+}
+
+/* ========== THREADS LIST ========== */
+const contacts = [
+  {id:'Maya', name:'Maya', avatar:'a-maya', enabledFlag:'mayaUnlocked'},
+  {id:'Riven', name:'Riven', avatar:'a-riven', enabledFlag:'rivenUnlocked'},
+  {id:'Noah', name:'Noah', avatar:'a-noah', enabledFlag:'noahUnlocked'},
+  {id:'Victor', name:'Victor', avatar:'a-victor', enabledFlag:'victorUnlocked'}
+];
+
+function renderThreads(){
+  const box=qs('#threadList'); box.innerHTML='';
+  const q = ST.queue[0];
+  if(q){ // mark preview on the row
+    ST.threads[q.id] ||= [];
+  }
+  contacts.forEach(c=>{
+    const enabled = !!ST.flags[c.enabledFlag];
+    const row = el('div','msg-row tap'); row.style.opacity = enabled?1:.45; if(!enabled){ row.style.pointerEvents='none'; }
+    const av = el('div','avatar '+c.avatar); av.textContent = enabled?'':c.name[0];
+    const info = el('div'); const who = el('div','who',c.name);
+    const preview = el('div','prev', getLastPreview(c.id) || (enabled?'Tap to open':'Locked') );
+    info.append(who,preview);
+    row.append(av,info);
+    row.addEventListener('click', ()=> openChat(c.id));
+    box.append(row);
+  });
+  // clear badge + toast after visiting messages
+  ST.queue.length = 0; save();
+  qs('#badgeMsg').classList.add('hidden'); qs('#homeToast').style.display='none';
+}
+
+function getLastPreview(contactId){
+  const t = ST.threads[contactId]; if(!t || t.length===0) return '';
+  const last = t[t.length-1];
+  if(last.choices) return last.choices.map(ch=>ch.text).join(' / ');
+  return last.text || '';
+}
+
+/* ========== CHAT ENGINE (very small VN) ========== */
+let CHAT = null, cursor=0, currentContact=null, lockChoices=false;
+
+const SCENES = {
+  Maya: [
+    { from:'Maya', text:"Hey! Guess who texted me last night? 👀"},
+    { choices:[
+      { id:'m1', text:"Tell me already!", effect:()=>{} },
+      { id:'m2', text:"Let me guess… Riven?", effect:()=>{} },
+      { id:'m3', text:"You’re glowing, Maya 😏", effect:()=>{} },
+    ]},
+    { from:'Maya', text:"Riven."},
+    { from:'Maya', text:`He asked if I'm still in town. Should I answer?`},
+    { choices:[
+      { id:'m4', text:"Your call. But be careful.", effect:()=>{} },
+      { id:'m5', text:"Ignore him.", effect:()=>{} },
+      { id:'m6', text:"Ask why now.", effect:()=>{} },
+    ]},
+    { from:'Maya', text:"...I did. And he asked about you."},
+    { from:'Maya', text:`I'll tell him you’re around. Brace yourself.`},
+    { sys: ()=> { ST.flags.rivenUnlocked = true; save(); } },
+    { sys: ()=> enqueuePreview('Riven',"…Are you there?") },
+    { from:'Maya', text:"Okay, I have class — text me later!"}
+  ],
+
+  Riven: [
+    { from:'Riven', text:"…Are you there?" },
+    { from:'Riven', text:"Maya said you’re still in town." },
+    { from:'Riven', text:"Do you ever think about… that night?" },
+    { me:true, text:"(Don’t reply)" , key:'silent' },
+    { choices:[
+      { id:'r1', text:"I don't sleep much lately.", effect:()=>{} },
+      { id:'r2', text:"It was a mistake.", effect:()=>{} },
+      { id:'r3', text:"Why text me now?", effect:()=>{} },
+    ]},
+    { from:'Riven', text:"Figures. You used to text me at 2AM just to send memes." },
+    { from:'Riven', text:"If you want answers, meet me at the riverside tonight." },
+    { sys: ()=> { ST.flags.ch1_s1_done=true; save();
+        enqueuePreview('Maya',"Okay, listen… I think he’s hiding something."); } }
+  ],
+};
+
+function openChat(contactId){
+  currentContact = contactId;
+  qs('#chatTitle').textContent = contactId;
+  const av = qs('#chatAvatar'); av.className = 'avatar a-'+contactId.toLowerCase();
+  show('chat');
+  // load script
+  CHAT = SCENES[contactId] || [];
+  cursor = 0; qs('#chatScroll').innerHTML='';
+  lockChoices=false;
+  paintNext(); // render first node
+}
+
+function appendBubble({from, text, me}){
+  const sc=qs('#chatScroll');
+  const b = el('div','bubble'+(me?' me':'')); 
+  if(from && !me){ const f=el('div','from',from); b.append(f); }
+  b.append( el('div',null,text) );
+  sc.append(b);
+  sc.scrollTop = sc.scrollHeight;
+  // save preview
+  ST.threads[currentContact] ||= [];
+  ST.threads[currentContact].push({from, text, me}); save();
+}
+
+function paintNext(){
+  if(cursor>=CHAT.length){ return; }
+  const node = CHAT[cursor++];
+  if(node.sys){ node.sys(); return paintNext(); }
+  if(node.choices){
+    // render choices
+    const wrap = el('div','choices');
+    node.choices.forEach(ch=>{
+      const btn = el('button','choice', ch.text);
+      btn.addEventListener('click', ()=>{
+        if(lockChoices) return; lockChoices=true;
+        appendBubble({me:true, text: ch.text});
+        ch.effect?.(); lockChoices=false; paintNext();
+      });
+      wrap.append(btn);
+    });
+    qs('#chatScroll').append(wrap);
+    qs('#chatScroll').scrollTop = qs('#chatScroll').scrollHeight;
+    qs('#btnNext').disabled=true;
+    // also save to history (stores the options shown)
+    ST.threads[currentContact] ||= []; ST.threads[currentContact].push({choices: node.choices}); save();
+  }else{
+    const who = node.me ? ST.playerName || 'You' : currentContact;
+    appendBubble({from: node.me?null:who, text: node.text, me: !!node.me});
+    qs('#btnNext').disabled=false;
+  }
+}
+
+qs('#btnNext').addEventListener('click', paintNext);
+qs('#backToInbox').addEventListener('click', ()=>{ show('inbox'); renderThreads(); });
+
+/* ========== INBOX PREVIEW QUEUE ========== */
+function enqueuePreview(from, preview){
+  ST.queue.push({from, preview, id: from}); save();
+  // If user is on home, update badge/toast:
+  if(screens.home.classList.contains('active')){
+    qs('#badgeMsg').classList.remove('hidden');
+    qs('#homeToast').style.display='block';
+    qs('#homeToast').textContent = `New message from ${from} 💬`;
+  }
+}
+
+/* ========== INITIAL BOOT ========== */
+(function init(){
+  if(!ST.flags || !ST.flags.booted){
+    show('start');
+  }else{
+    // already booted: skip name modal and go home
+    openHome();
+  }
+})();
 </script>
 </body>
 </html>
