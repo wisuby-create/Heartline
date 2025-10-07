@@ -1,1 +1,309 @@
+{
+  "meta": {
+    "chapterId": "ch1",
+    "title": "The Message",
+    "version": "1.0.0",
+    "defaultStart": "s1"
+  },
+  "characters": {
+    "MC": { "name": "{{playerName}}" },
+    "Maya": { "name": "Maya" },
+    "Riven": { "name": "Riven" },
+    "Noah": { "name": "Noah" },
+    "Victor": { "name": "Victor" }
+  },
+  "stateInit": {
+    "affinity": { "Riven": 0, "Noah": 0, "Victor": 0, "Maya": 0 },
+    "routes": { "Riven": false, "Noah": false, "Victor": false },
+    "flags": { "rivenLocked": false }
+  },
 
+  "scenes": {
+    "s1": {
+      "type": "chat",
+      "contact": "Maya",
+      "messages": [
+        { "from": "Maya", "text": "Hey! Guess who texted me last night? 👀" }
+      ],
+      "choices": [
+        {
+          "id": "s1a",
+          "text": "Tell me already!",
+          "next": "s2",
+          "effects": [{ "affinity.Maya": 1 }]
+        },
+        {
+          "id": "s1b",
+          "text": "Let me guess… Riven?",
+          "next": "s2",
+          "effects": [
+            { "affinity.Maya": 1 },
+            { "routes.Riven": true }
+          ]
+        },
+        {
+          "id": "s1c",
+          "text": "You’re glowing, Maya 😏",
+          "next": "s2",
+          "effects": [{ "affinity.Maya": 2 }]
+        }
+      ]
+    },
+
+    "s2": {
+      "type": "unlock",
+      "unlockContact": "Riven",
+      "notifyText": "Riven sent you a message.",
+      "next": "s2_chat"
+    },
+
+    "s2_chat": {
+      "type": "chat",
+      "contact": "Riven",
+      "messages": [
+        { "from": "Riven", "text": "Maya said you’re still in town." },
+        { "from": "Riven", "text": "...Do you ever think about that night?" }
+      ],
+      "choices": [
+        {
+          "id": "s2a",
+          "text": "Sometimes. I try not to.",
+          "next": "s2_after",
+          "effects": [{ "affinity.Riven": 1 }]
+        },
+        {
+          "id": "s2b",
+          "text": "Of course I do.",
+          "next": "s2_after",
+          "effects": [{ "affinity.Riven": 2 }, { "routes.Riven": true }]
+        },
+        {
+          "id": "s2c",
+          "text": "You shouldn’t text me.",
+          "next": "s2_lock",
+          "effects": [{ "flags.rivenLocked": true }, { "affinity.Riven": -2 }]
+        }
+      ]
+    },
+
+    "s2_after": {
+      "type": "chat",
+      "contact": "Riven",
+      "messages": [
+        { "from": "Riven", "text": "Figures. You used to text me at 2AM just to send memes." },
+        { "from": "Riven", "text": "I kinda miss that." }
+      ],
+      "next": "s3"
+    },
+
+    "s2_lock": {
+      "type": "system",
+      "text": "You muted Riven for now.",
+      "next": "s3"
+    },
+
+    "s3": {
+      "type": "chat",
+      "contact": "Maya",
+      "messages": [
+        { "from": "Maya", "text": "Sooo… Riven texted you, huh?" },
+        { "from": "Maya", "text": "He told me he *might* reach out. I didn’t think he actually would 😅" }
+      ],
+      "choices": [
+        {
+          "id": "s3a",
+          "text": "He hasn’t changed.",
+          "next": "s4",
+          "effects": []
+        },
+        {
+          "id": "s3b",
+          "text": "He sounded… different.",
+          "next": "s4",
+          "effects": [{ "affinity.Maya": 1 }]
+        },
+        {
+          "id": "s3c",
+          "text": "I don’t want to talk about him.",
+          "next": "s4",
+          "effects": [{ "affinity.Maya": -1 }]
+        }
+      ]
+    },
+
+    "s4": {
+      "type": "unlock",
+      "unlockContact": "Noah",
+      "notifyText": "New message from Noah.",
+      "next": "s4_chat"
+    },
+
+    "s4_chat": {
+      "type": "chat",
+      "contact": "Noah",
+      "messages": [
+        { "from": "Noah", "text": "Hey! It’s been ages!" },
+        { "from": "Noah", "text": "Maya told me you’re back! 😄" },
+        { "from": "Noah", "text": "Wanna grab a coffee later?" }
+      ],
+      "choices": [
+        {
+          "id": "s4a",
+          "text": "Sure, I’d love that.",
+          "next": "s5",
+          "effects": [{ "affinity.Noah": 2 }, { "routes.Noah": true }]
+        },
+        {
+          "id": "s4b",
+          "text": "Maybe another time.",
+          "next": "s5",
+          "effects": [{ "affinity.Noah": 0 }]
+        },
+        {
+          "id": "s4c",
+          "text": "How did Maya tell you?",
+          "next": "s4_after",
+          "effects": [{ "affinity.Noah": 1 }]
+        }
+      ]
+    },
+
+    "s4_after": {
+      "type": "chat",
+      "contact": "Noah",
+      "messages": [
+        { "from": "Noah", "text": "She’s in our group chat again. I can add you back… only if you want." }
+      ],
+      "next": "s5"
+    },
+
+    "s5": {
+      "type": "unlock",
+      "unlockContact": "Victor",
+      "notifyText": "Unknown number: \"Good afternoon.\"",
+      "next": "s5_chat"
+    },
+
+    "s5_chat": {
+      "type": "chat",
+      "contact": "Victor",
+      "messages": [
+        { "from": "Victor", "text": "Good afternoon. I believe we’ve met — briefly, at Maya’s party last year." },
+        { "from": "Victor", "text": "You left your book there, remember?" }
+      ],
+      "choices": [
+        {
+          "id": "s5a",
+          "text": "Oh! You’re the one with glasses.",
+          "next": "s5_after",
+          "effects": [{ "affinity.Victor": 2 }, { "routes.Victor": true }]
+        },
+        {
+          "id": "s5b",
+          "text": "Yes, that was mine. Thanks.",
+          "next": "s5_after",
+          "effects": [{ "affinity.Victor": 1 }]
+        },
+        {
+          "id": "s5c",
+          "text": "Who gave you my number?",
+          "next": "s5_after_alt",
+          "effects": [{ "affinity.Victor": -1 }]
+        }
+      ]
+    },
+
+    "s5_after": {
+      "type": "chat",
+      "contact": "Victor",
+      "messages": [
+        { "from": "Victor", "text": "I found it among some things Maya left with me." },
+        { "from": "Victor", "text": "It’s a good read — thoughtful, emotional. Much like you, I suppose." }
+      ],
+      "next": "s6"
+    },
+
+    "s5_after_alt": {
+      "type": "chat",
+      "contact": "Victor",
+      "messages": [
+        { "from": "Victor", "text": "Maya. I apologize if this is intrusive. The book deserved to find its owner." }
+      ],
+      "next": "s6"
+    },
+
+    "s6": {
+      "type": "chat",
+      "contact": "Maya",
+      "messages": [
+        { "from": "Maya", "text": "Sooo… looks like everyone’s talking to you again 👀" },
+        { "from": "Maya", "text": "Are you secretly running a charm school or what? 😂" }
+      ],
+      "choices": [
+        {
+          "id": "s6a",
+          "text": "They texted first!",
+          "next": "s7",
+          "effects": []
+        },
+        {
+          "id": "s6b",
+          "text": "Guess I’m just unforgettable.",
+          "next": "s7",
+          "effects": [{ "affinity.Maya": 1 }]
+        },
+        {
+          "id": "s6c",
+          "text": "I don’t want any drama.",
+          "next": "s7_quiet",
+          "effects": []
+        }
+      ]
+    },
+
+    "s7_quiet": {
+      "type": "monologue",
+      "text": [
+        "I just want a quiet life. Is that so hard?",
+        "But… why does my heart beat faster when I see their names?"
+      ],
+      "next": "s7"
+    },
+
+    "s7": {
+      "type": "monologue",
+      "text": [
+        "Riven, Noah, Victor… They all came back into my life.",
+        "Was it fate… or just unfinished business?"
+      ],
+      "choices": [
+        {
+          "id": "s7a",
+          "text": "Maybe this time, I’ll let someone in.",
+          "next": "s8",
+          "effects": [{ "flags.openToRomance": true }]
+        },
+        {
+          "id": "s7b",
+          "text": "No. I’ll protect my heart.",
+          "next": "s8",
+          "effects": [{ "flags.guardHeart": true }]
+        }
+      ]
+    },
+
+    "s8": {
+      "type": "chat",
+      "contact": "Maya",
+      "messages": [
+        { "from": "Maya", "text": "Hey, don’t disappear on me, okay? 🌸" },
+        { "from": "Maya", "text": "Big day tomorrow — I have a feeling things are about to change." }
+      ],
+      "end": {
+        "title": "Chapter 1 Complete",
+        "nextChapterId": "ch2",
+        "cgReward": "cg_ch1_maya.png"
+      }
+    }
+  }
+}
