@@ -22,7 +22,7 @@
   .status{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#0b1220;color:#fff;z-index:3}
   .status-time{font-weight:700} .status-date{color:#9ca3af;font-size:12px} .status-icons{color:#9ca3af;font-size:12px}
 
-  /* Ekran z tapetą (Twoje foto) */
+  /* Tło telefonu (Twoja sakura) */
   .screen{position:relative;flex:1;overflow:hidden;background:#fce7f3}
   .screen::before{
     content:""; position:absolute; inset:0;
@@ -243,7 +243,7 @@ const Scripts = {
   }
 };
 
-/* ====== CONTACTS / ikony ====== */
+/* ====== CONTACTS ====== */
 const CONTACTS = [
   { id:'maja',   name:'Maya',   icon:ICONS.maja },
   { id:'riven',  name:'Riven',  icon:ICONS.riven },
@@ -267,7 +267,6 @@ function Avatar({src, fallback, size=40}){
     </div>
   );
 }
-
 function Start({onStart}){
   return (
     <div className="start-wrap">
@@ -386,10 +385,10 @@ function App(){
   const [screen,setScreen]=useState('home'); // 'home' | 'messages' | 'chat'
   const [currentId,setCurrentId]=useState(null);
 
-  const [unlocked,setUnlocked]=useState(()=>JSON.parse(localStorage.getItem('heartline_unlocked')||'null')||{maja:false,riven:false,noah:false,victor:false});
-  const [badges,setBadges]=useState(()=>JSON.parse(localStorage.getItem('heartline_badges')||'null')||{});
-  const [flags,setFlags]=useState(()=>JSON.parse(localStorage.getItem('heartline_flags')||'null')||{});
-  const [aff,setAff]=useState(()=>JSON.parse(localStorage.getItem('heartline_aff')||'null')||{riven:0,noah:0,victor:0});
+  const [unlocked,setUnlocked]=useState({maja:false,riven:false,noah:false,victor:false});
+  const [badges,setBadges]=useState({});
+  const [flags,setFlags]=useState({});
+  const [aff,setAff]=useState({riven:0,noah:0,victor:0});
   const [toast,setToast]=useState(null);
 
   const [chats,setChats]=useState(()=>{
@@ -397,18 +396,22 @@ function App(){
     return o;
   });
 
-  // persist
+  // diagnostyka ładowania obrazów (zobacz w konsoli)
+  const pingImg=(url,label)=>{ const i=new Image(); i.onload=()=>console.log('OK',label,url); i.onerror=()=>console.warn('BŁĄD',label,url); i.src=url+'?v='+(Date.now()%1e6); };
+
   useEffect(()=>{
-    localStorage.setItem('heartline_unlocked', JSON.stringify(unlocked));
-    localStorage.setItem('heartline_badges', JSON.stringify(badges));
-    localStorage.setItem('heartline_flags', JSON.stringify(flags));
-    localStorage.setItem('heartline_aff', JSON.stringify(aff));
-  },[unlocked,badges,flags,aff]);
+    pingImg('./assets/heartline_logo.png','logo');
+    pingImg('./assets/start_screen.png','start_screen');
+    pingImg('./assets/sakura_anime_closeup.png','bg');
+    Object.values({
+      mc:'./assets/icons/icon_mc.png',maja:'./assets/icons/icon_maja.png',r:'./assets/icons/icon_riven.png',n:'./assets/icons/icon_noah.png',v:'./assets/icons/icon_victor.png'
+    }).forEach((p)=>pingImg(p,'icon'));
+  },[]);
 
   const setChat=(id,fn)=>setChats(prev=>({...prev,[id]:fn(prev[id])}));
   const unreadTotal = Object.values(badges).reduce((a,b)=>a+b,0);
 
-  // STORY handlers
+  // Zdarzenia systemowe (unlock / flag / cg)
   const applySystem=(entry)=>{
     if(entry.system==='unlock'){
       const who=entry.who;
@@ -417,9 +420,9 @@ function App(){
       if(who==='maja'){ setToast('New message from Maya'); setTimeout(()=>setToast(null),1400); }
     }
     if(entry.system==='flag'){ setFlags(f=>({...f,[entry.key]:true})); }
-    if(entry.system==='cg'){ /* tutaj możesz dodać galerię później */ }
   };
 
+  // dociąganie pierwszej wiadomości wątku
   const ensureStart=(id)=>{
     const sc=(id==='maja_checkin')? Scripts.maja_checkin : Scripts[id];
     const target=(id==='maja_checkin')?'maja':id;
@@ -432,6 +435,7 @@ function App(){
     });
   };
 
+  // przycisk „Dalej” – zawsze ściąga JEDEN element z kolejki; gdy kolejka się wyzeruje → pojawiają się WYBORY
   const next=(id)=>{
     const target=(id==='maja_checkin')?'maja':id;
     const sc=(id==='maja_checkin')? Scripts.maja_checkin : Scripts[id];
@@ -441,8 +445,15 @@ function App(){
       const messages=[...c.messages];
       if(msg.system){ applySystem(msg); }
       else { messages.push(msg); }
-      let choices=c.choices, step=c.step;
-      if(rest.length===0 && step==='started'){ choices=sc.choices||[]; step='await'; }
+      let {choices, step} = c;
+      // jeżeli właśnie wyczerpaliśmy kolejkę, pokaż choices
+      if(rest.length===0){
+        if(step==='started' || step==='await' || step==='follow'){
+          // jeśli to Riven po pierwszej turze → wstrzykniemy followup w useEffect niżej
+          choices = (sc.choices||[]);
+          step = (id==='riven' && c.step!=='follow') ? 'await' : c.step;
+        }
+      }
       return {...c,messages,queue:rest,choices,step};
     });
   };
@@ -451,37 +462,53 @@ function App(){
     const sc=(id==='maja_checkin')? Scripts.maja_checkin : Scripts[id];
     const target=(id==='maja_checkin')?'maja':id;
     const pick=(sc.choices||[]).find(x=>x.id===choiceId);
+    if(!pick) return;
 
+    // dodaj moją wypowiedź
     setChat(target,c=>({...c,messages:[...c.messages,{from:'You',text:pick.text,me:true}],choices:[]}));
 
+    // punkty (jeśli są)
     if(pick.aff){
       setAff(prev=>({...prev,
-        riven:(prev.riven||0)+(pick.aff.riven||0||0),
-        noah:(prev.noah||0)+(pick.aff.noah||0||0),
-        victor:(prev.victor||0)+(pick.aff.victor||0||0),
+        riven:(prev.riven||0)+(pick.aff.riven||0),
+        noah:(prev.noah||0)+(pick.aff.noah||0),
+        victor:(prev.victor||0)+(pick.aff.victor||0),
       }));
     }
-    if(pick.cg){ /* opcjonalnie: applySystem({system:'cg', id:pick.cg}) */ }
 
+    // CG (tu tylko hak eventu — grafiki podłączymy w galerii w R2)
+    // if(pick.cg){ ... }
+
+    // odpowiedzi na wybór → do kolejki
     const bundle=(sc.replies||{})[choiceId]||[];
     setChat(target,c=>({...c,queue:[...c.queue,...bundle]}));
 
-    // po follow-up Riven -> krótki check-in Maji
-    if(id==='riven' && ['rf1','rf2','rf3'].includes(choiceId)){
-      setTimeout(()=>{
-        setBadges(b=>({...b,maja:(b.maja||0)+1}));
-        const s=Scripts.maja_checkin.start;
-        setChats(prev=>({...prev, maja:{...prev.maja, queue:[...prev.maja.queue, {from:s.from,text:s.text,me:false}], step:prev.maja.step}}));
-      },500);
-    }
+    // po wyborze wątku Rivena, gdy skończą się reply, wstrzykniemy check-in Maji (poniżej w useEffect)
   };
 
-  // Start flow
+  // Po zakończeniu pierwszej sekwencji Rivena → pojawi się followup (drugi set wyborów)
+  useEffect(()=>{
+    const c=chats.riven;
+    if(!c) return;
+    // Jeśli nie ma kolejki, nie ma aktywnych wyborów i są już jakieś wiadomości, a jeszcze nie pokazaliśmy 'follow'
+    if(c.queue.length===0 && c.choices.length===0 && c.messages.length>0 && c.step!=='follow'){
+      setChats(prev=>({...prev,riven:{...prev.riven,choices:Scripts.riven.followupChoices,step:'follow'}}));
+    }
+    // Jeśli właśnie zakończyliśmy followup (brak kolejki i brak choices, a step=='follow') → wstrzyknij check-in Maji i unlock Noaha (robią to systemowe zdarzenia z replies, ale dmuchamy na zimne)
+    if(c.step==='follow' && c.queue.length===0 && c.choices.length===0){
+      if(!flags.maja_checkin){
+        const s=Scripts.maja_checkin.start;
+        setChats(prev=>({...prev, maja:{...prev.maja, queue:[...prev.maja.queue, {from:s.from,text:s.text,me:false}]}}));
+      }
+    }
+  },[chats.riven, flags.maja_checkin]);
+
+  // Start → modal z imieniem → dom
   const startGame=()=>{ setStarted(true); setAskName(true); };
   const saveName=(nm)=>{
-    setAskName(false); setMcName(nm); localStorage.setItem('heartline_name', nm);
+    setAskName(false); setMcName(nm||'You'); localStorage.setItem('heartline_name', nm||'You');
     setScreen('home');
-    // Po chwili – powiadomienie od Maji + start jej sceny
+    // Po 3s powiadomienie od Maji + start jej sceny
     setTimeout(()=>{
       setUnlocked(u=>({...u,maja:true}));
       setBadges(b=>({...b,maja:(b.maja||0)+1}));
@@ -502,19 +529,26 @@ function App(){
             {askName && <NameModal defName={mcName} onCancel={()=>setAskName(false)} onOK={saveName}/>}
 
             {started && !askName && screen==='home' &&
-              <Home unreadTotal={unreadTotal}
+              <Home unreadTotal={Object.values(badges).reduce((a,b)=>a+b,0)}
                 openMessages={()=>setScreen('messages')}
                 openGallery={()=>{}}/>}
 
             {started && !askName && screen==='messages' &&
-              <MessagesList contacts={contacts} unlocked={unlocked} chats={chats} unread={badges}
-                onOpenChat={(id)=>{ setCurrentId(id); setScreen('chat'); ensureStart(id); setBadges(b=>({...b,[id]:0})); }}
-                onBack={()=>setScreen('home')}/>}
+              <MessagesList contacts={contacts}
+                            unlocked={unlocked}
+                            chats={chats}
+                            unread={badges}
+                            onOpenChat={(id)=>{ setCurrentId(id); setScreen('chat'); ensureStart(id); setBadges(b=>({...b,[id]:0})); }}
+                            onBack={()=>setScreen('home')}/>}
 
             {started && !askName && screen==='chat' && currentId &&
               <ChatView contact={contacts.find(c=>c.id===currentId)} mcName={mcName}
-                chat={chats[currentId].messages} queue={chats[currentId].queue} choices={chats[currentId].choices}
-                next={()=>next(currentId)} choose={(cid)=>choose(currentId,cid)} onBack={()=>setScreen('messages')} />}
+                        chat={chats[currentId].messages}
+                        queue={chats[currentId].queue}
+                        choices={chats[currentId].choices}
+                        next={()=>next(currentId)}
+                        choose={(cid)=>choose(currentId,cid)}
+                        onBack={()=>setScreen('messages')} />}
 
             {toast && <div className="toast">🌸 {toast}</div>}
           </div>
