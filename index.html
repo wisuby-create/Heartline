@@ -3,415 +3,443 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Heartline — Romance Messenger (Demo)</title>
+<title>Heartline — Romance Messenger</title>
 <style>
   :root{
-    --pink:#ff8fb5; --pink2:#ff6aa3; --ink:#1d2133;
-    --meFrom:#5a6bf7; --meTo:#7f9bff;
-    --shadow:0 10px 30px rgba(0,0,0,.25);
+    --bg1:#fde2ee; --bg2:#e8f2ff;
+    --card:#ffffff; --ink:#111; --muted:#666; --rose:#ff6fa3; --rose2:#ff86b2;
+    --pill:#f7f1f7; --accent:#7a5cff; --ok:#2fc37a; --warn:#ffcc00;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-  html,body{height:100%;margin:0;background:#0e1220;font-family:system-ui,Inter,Segoe UI,Roboto}
-  .app{height:100dvh;max-width:430px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:center}
-  .wall{position:absolute;inset:0;background:
-    linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.35)),
-    url('assets/wallpapers/sakura-closeup.jpg') center/cover no-repeat;
-    filter:blur(8px) saturate(1.05);transform:scale(1.06)}
-  .screen{position:absolute;inset:0;display:none}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;}
+  body{background:#0b0f16;color:var(--ink);display:flex;align-items:center;justify-content:center}
+  /* phone frame */
+  .phone{width:420px;max-width:100vw;height:860px;max-height:100vh;background:#fff;border-radius:26px;box-shadow:0 20px 60px rgba(0,0,0,.45);overflow:hidden;position:relative}
+  .statusbar{position:absolute;inset:0 0 auto 0;height:40px;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:15;font-weight:600}
+  .statusbar span{background:rgba(0,0,0,.35);padding:6px 10px;border-radius:14px;backdrop-filter:saturate(1.2) blur(6px);font-size:12px}
+  /* screens */
+  .screen{position:absolute;inset:0;overflow:auto;display:none}
   .screen.active{display:block}
-  .glass{position:absolute;inset:12px;border-radius:24px;background:rgba(255,255,255,.78);backdrop-filter:blur(14px);box-shadow:var(--shadow);overflow:hidden}
-  .status{position:absolute;top:6px;left:0;right:0;height:26px;display:flex;align-items:center;justify-content:space-between;color:#fff;padding:0 16px;font-weight:700;font-size:14px;z-index:5}
-  .pill{background:rgba(0,0,0,.35);padding:2px 10px;border-radius:999px}
-
-  /* START */
-  .start-wrap{position:absolute;inset:0;display:grid;place-items:center;padding:18px}
-  .start-card{width:100%;height:100%;border-radius:24px;overflow:hidden;box-shadow:var(--shadow);position:relative;background:#f8d9e6}
-  .logo{position:absolute;left:50%;transform:translateX(-50%);top:22px;width:60%;height:72px;background:url('assets/heartline_logo.png') center/contain no-repeat;filter:drop-shadow(0 2px 10px rgba(0,0,0,.18))}
-  .start-illustration{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.0) 0%, rgba(255,255,255,.15) 65%, rgba(255,255,255,.35) 100%),
-    url('assets/start/cover.jpg') center/cover no-repeat}
-  .start-btn{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;padding:16px 28px;border-radius:999px;border:0;cursor:pointer;
-    background:linear-gradient(180deg,var(--pink),var(--pink2));color:#fff;font-weight:800;font-size:22px;letter-spacing:.3px;box-shadow:var(--shadow)}
-
-  /* NAME */
-  .name-modal{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(14,18,32,.55);z-index:20}
-  .name-modal.show{display:flex}
-  .card{width:92%;max-width:360px;border-radius:18px;background:#fff;box-shadow:var(--shadow);padding:18px;text-align:center}
-  .face{width:96px;height:96px;border-radius:50%;background:#eee url('assets/avatars/mc.png') center/cover no-repeat;margin:6px auto 12px}
-  .field{display:flex;gap:10px;align-items:center}
-  .field input{flex:1;border:2px solid #eee;border-radius:12px;padding:12px 14px;font-size:16px}
-  .btn{padding:10px 16px;border-radius:12px;border:0;background:#111827;color:#fff;font-weight:800;cursor:pointer}
-  .muted{color:#777;font-size:12px;margin-top:8px}
-
-  /* HOME */
-  .home{padding:18px;display:flex;flex-direction:column;gap:16px}
-  .dock{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-  .tile{background:rgba(255,255,255,.95);border-radius:18px;padding:14px 10px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.09);position:relative}
-  .ico{width:56px;height:56px;margin:0 auto 8px;border-radius:16px;display:grid;place-items:center;font-size:26px;color:#fff}
-  .i-msg{background:linear-gradient(180deg,#ff7bb2,#ff4f98)}
-  .i-phone{background:linear-gradient(180deg,#50d890,#24b26a)}
-  .i-gallery{background:linear-gradient(180deg,#8b9fff,#6c7cff)}
-  .i-clock{background:linear-gradient(180deg,#ffc86a,#ff9d3f)}
-  .i-notes{background:linear-gradient(180deg,#9ee1ff,#55c7f5)}
-  .i-settings{background:linear-gradient(180deg,#c7b2ff,#a086ff)}
-  .badge{position:absolute;margin-left:36px;margin-top:-6px;background:#ff3b62;color:#fff;border-radius:999px;padding:2px 6px;font-size:12px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-  .toast{background:#fff;border-radius:14px;padding:10px 12px;box-shadow:var(--shadow)}
-
-  /* LIST / CHAT */
-  .nav{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:rgba(255,255,255,.95);border-bottom:1px solid #eee}
-  .title{font-weight:800}
-  .messages{padding:12px;display:flex;flex-direction:column;gap:10px}
-  .msg-row{background:#fff;border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 6px 14px rgba(0,0,0,.08)}
-  .avatar{width:46px;height:46px;border-radius:50%;background:#eee center/cover no-repeat;display:grid;place-items:center;font-weight:800;color:#fff}
-  .a-maya{background-image:url('assets/avatars/maya.png');background-color:#f39bb1}
-  .a-riven{background-image:url('assets/avatars/riven.png');background-color:#7a83ff}
-  .a-noah{background-image:url('assets/avatars/noah.png');background-color:#7ed786}
-  .a-victor{background-image:url('assets/avatars/victor.png');background-color:#b1b6ff}
-  .who{font-weight:800;color:var(--ink)}
-  .prev{color:#5a617a;font-size:13px}
-
-  .chat{position:absolute;inset:54px 0 62px 0;overflow:auto;padding:14px;background:linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.9))}
-  .bubble{max-width:78%;margin:10px 0;padding:11px 14px;border-radius:16px;background:#fff;box-shadow:0 6px 14px rgba(0,0,0,.06)}
-  .me{margin-left:auto;background:linear-gradient(180deg,var(--meFrom),var(--meTo));color:#fff}
-  .from{font-size:12px;font-weight:700;color:#7b84a2;margin-bottom:4px}
-  .choices{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-  .choice{border:0;border-radius:999px;padding:12px 14px;background:linear-gradient(180deg,var(--pink),var(--pink2));color:#fff;font-weight:800}
-  .next{position:absolute;left:12px;right:12px;bottom:8px;height:46px;border-radius:999px;background:#111827;color:#fff;border:0;font-weight:800;box-shadow:var(--shadow)}
-  .hidden{display:none!important}
+  /* start */
+  .start{
+    background-image:linear-gradient(180deg, #f9d7e6 0%, #fbe9f2 40%, #f3d7ea 100%), url('assets/start-art.jpg');
+    background-size:cover;background-position:center;
+  }
+  .start-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:24px}
+  .start-logo{position:absolute;top:44px;left:0;right:0;text-align:center;font-family:Georgia, 'Times New Roman', serif;font-size:56px;color:#fff;text-shadow:0 4px 20px rgba(0,0,0,.25)}
+  .start-btn{margin:16px auto 32px auto;background:linear-gradient(180deg,var(--rose),var(--rose2));color:#fff;border:none;border-radius:24px;padding:16px 28px;font-weight:800;font-size:20px;box-shadow:0 10px 24px rgba(255,105,150,.35)}
+  /* name modal */
+  dialog{border:none;border-radius:16px;max-width:88%;padding:0;overflow:hidden}
+  .modal{background:#fff}
+  .modal-hd{padding:18px 18px 0 18px}
+  .modal-bd{padding:18px}
+  .modal-ft{display:flex;gap:10px;justify-content:flex-end;padding:0 18px 18px 18px}
+  .hero-row{display:flex;gap:16px;align-items:center}
+  .hero{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#f5cbd9,#ffe2f0);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .hero:before{content:"";width:60px;height:60px;background:url('assets/hero-circle.png') center/cover no-repeat, radial-gradient(#d1a,#d9f);border-radius:50%;filter:saturate(1.1)}
+  .input{width:100%;padding:14px 12px;border-radius:12px;border:1px solid #ddd;font-size:16px}
+  .btn{border:none;border-radius:12px;padding:12px 16px;font-weight:700}
+  .btn.primary{background:var(--accent);color:#fff}
+  /* home */
+  .home{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.90)),
+      url('assets/sakura-closeup.jpg');
+    background-size:cover;background-position:center;
+  }
+  .home .grid{padding:64px 20px 20px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .app{background:#fff;border-radius:22px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 6px 10px rgba(0,0,0,.08)}
+  .app .ico{width:54px;height:54px;border-radius:14px;display:grid;place-items:center;color:#fff;font-size:26px}
+  .app .lbl{font-weight:800}
+  .ico.msg{background:linear-gradient(135deg,#ff7eb3,#ff65a3)}
+  .ico.ph{background:linear-gradient(135deg,#00c36f,#00a455)}
+  .ico.gal{background:linear-gradient(135deg,#7a5cff,#8aa6ff)}
+  .ico.clk{background:linear-gradient(135deg,#ff7a59,#ffb86c)}
+  .ico.note{background:linear-gradient(135deg,#5ec8ff,#76e1ff)}
+  .ico.set{background:linear-gradient(135deg,#b08cff,#d2b3ff)}
+  .toast{position:absolute;left:16px;right:16px;bottom:24px;background:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 10px 20px rgba(0,0,0,.15);display:none}
+  .toast.show{display:block}
+  /* messages list */
+  .list{padding:60px 14px 16px 14px;background:linear-gradient(#f7f7fb,#f2f4f8)}
+  .thread{display:flex;gap:12px;background:#fff;border-radius:18px;padding:14px;margin:10px 0;align-items:center;box-shadow:0 3px 10px rgba(0,0,0,.05)}
+  .av{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-weight:900;color:#fff}
+  .av.m{background:#ff85b3}.av.r{background:#8aa6ff}.av.n{background:#8be38f}.av.v{background:#c2b5ff}
+  .meta{flex:1}
+  .meta .tit{font-weight:900}
+  .meta .sub{color:#666;margin-top:3px}
+  .lock{font-size:12px;color:#999}
+  .back{position:absolute;left:10px;top:44px;border:none;background:#fff;border-radius:13px;padding:8px 10px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+  /* chat */
+  .chat{background:linear-gradient(180deg,#ffe9f2,#f5f0ff)}
+  .bar{position:sticky;top:40px;background:rgba(255,255,255,.85);backdrop-filter:blur(6px);display:flex;align-items:center;gap:10px;padding:12px 14px;font-weight:900;border-bottom:1px solid #eee;z-index:5}
+  .msgs{padding:14px 14px 90px 14px}
+  .bubble{background:#fff;padding:12px 14px;border-radius:16px;max-width:80%;box-shadow:0 2px 8px rgba(0,0,0,.08);margin:10px 0}
+  .bubble.me{margin-left:auto;background:linear-gradient(135deg,#7a5cff,#9f8bff);color:#fff}
+  .who{font-size:12px;font-weight:900;color:#777;margin:2px 0 0 4px}
+  .choices{position:fixed;left:0;right:0;bottom:20px;padding:0 14px;display:flex;flex-direction:column;gap:10px}
+  .choice{border:none;border-radius:20px;background:linear-gradient(180deg,#ff7eb3,#ff9ac7);color:#fff;font-weight:900;padding:12px}
+  .next{position:fixed;right:16px;bottom:20px;border:none;border-radius:20px;background:#111;color:#fff;padding:10px 14px;font-weight:900}
+  .pill{position:absolute;right:10px;top:-6px;background:#ff496f;color:#fff;font-size:11px;border-radius:10px;padding:2px 6px}
+  /* title bars */
+  .title{position:absolute;top:44px;left:0;right:0;text-align:center;font-weight:900}
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="wall"></div>
+  <div class="phone" id="phone">
+    <div class="statusbar"><span id="sb-time">--:--</span><span id="sb-date">—</span><span id="sb-batt">92%</span></div>
 
-  <div class="status"><span class="pill" id="clock">--:--</span><span class="pill" id="datepill"></span><span class="pill">92%</span></div>
-
-  <!-- START -->
-  <section class="screen active" id="start">
-    <div class="start-wrap">
-      <div class="start-card">
-        <div class="logo"></div>
-        <div class="start-illustration"></div>
+    <!-- START -->
+    <section class="screen start active" id="scr-start">
+      <div class="start-inner">
+        <div class="start-logo">Heartline</div>
         <button class="start-btn" id="btnStart">Start</button>
       </div>
-    </div>
-    <div class="name-modal" id="nameModal">
-      <div class="card">
-        <div class="face"></div>
-        <h3>Enter your name</h3>
-        <div class="field">
-          <input id="playerName" maxlength="16" placeholder="Your name" />
-          <button class="btn" id="okName">OK</button>
+    </section>
+
+    <!-- NAME -->
+    <section class="screen home" id="scr-name">
+      <div class="title">Welcome</div>
+      <dialog id="nameDlg">
+        <div class="modal">
+          <div class="modal-hd"><h3 style="margin:0">Enter your name</h3></div>
+          <div class="modal-bd">
+            <div class="hero-row">
+              <div class="hero"></div>
+              <input id="inpName" class="input" maxlength="16" placeholder="Your name" />
+            </div>
+            <div style="color:#777;margin-top:8px;font-size:12px">It will appear in English dialogues.</div>
+          </div>
+          <div class="modal-ft">
+            <button class="btn" id="cancelName">Cancel</button>
+            <button class="btn primary" id="okName">OK</button>
+          </div>
         </div>
-        <div class="muted">Your name will appear in dialogues.</div>
-      </div>
-    </div>
-  </section>
+      </dialog>
+      <script>/* open modal immediately */</script>
+    </section>
 
-  <!-- HOME -->
-  <section class="screen" id="home">
-    <div class="glass" style="padding:18px;display:flex;flex-direction:column;gap:16px">
-      <div style="display:flex;justify-content:space-between">
-        <div class="pill" id="barDate">—</div><div class="pill">92%</div>
+    <!-- HOME -->
+    <section class="screen home" id="scr-home">
+      <div class="title">Home</div>
+      <div class="grid">
+        <div class="app" data-open="messages"><div class="ico msg">💬</div><div class="lbl">Messages <span id="i-badge" class="pill" style="display:none">1</span></div></div>
+        <div class="app"><div class="ico ph">📞</div><div class="lbl">Phone</div></div>
+        <div class="app"><div class="ico gal">🖼️</div><div class="lbl">Gallery</div></div>
+        <div class="app"><div class="ico clk">⏰</div><div class="lbl">Clock</div></div>
+        <div class="app"><div class="ico note">📝</div><div class="lbl">Notes</div></div>
+        <div class="app" data-open="settings"><div class="ico set">⚙️</div><div class="lbl">Settings</div></div>
       </div>
-      <div class="dock">
-        <div class="tile" id="openMessages">
-          <div class="ico i-msg">💬</div>
-          <div style="position:relative;font-weight:800;">Messages <span class="badge hidden" id="badgeMsg">1</span></div>
+      <div id="toast" class="toast">New message from <b>Maya</b> 💬</div>
+    </section>
+
+    <!-- MESSAGES -->
+    <section class="screen" id="scr-msgs">
+      <button class="back" id="back1">◀</button>
+      <div class="title">Messages</div>
+      <div class="list" id="threads"></div>
+    </section>
+
+    <!-- CHAT -->
+    <section class="screen chat" id="scr-chat">
+      <div class="bar"><button class="back" id="back2">◀</button><div id="chatTitle">Chat</div></div>
+      <div class="msgs" id="msgs"></div>
+      <div class="choices" id="choices"></div>
+      <button class="next" id="btnNext" style="display:none">Next ▶</button>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="screen" id="scr-settings">
+      <button class="back" id="back3">◀</button>
+      <div class="title">Settings</div>
+      <div class="list" style="padding-top:70px">
+        <div class="thread" style="cursor:pointer" id="btnReset">
+          <div class="av v">⚠️</div>
+          <div class="meta"><div class="tit">Reset save</div><div class="sub">Clear progress and show Start screen again</div></div>
         </div>
-        <div class="tile"><div class="ico i-phone">📞</div><div style="font-weight:800;">Phone</div></div>
-        <div class="tile"><div class="ico i-gallery">🖼️</div><div style="font-weight:800;">Gallery</div></div>
-        <div class="tile"><div class="ico i-clock">⏰</div><div style="font-weight:800;">Clock</div></div>
-        <div class="tile"><div class="ico i-notes">📝</div><div style="font-weight:800;">Notes</div></div>
-        <div class="tile"><div class="ico i-settings">⚙️</div><div style="font-weight:800;">Settings</div></div>
       </div>
-      <div class="toast" id="homeToast">New message from Maya 💬</div>
-    </div>
-  </section>
-
-  <!-- INBOX -->
-  <section class="screen" id="inbox">
-    <div class="glass">
-      <div class="nav">
-        <button class="btn" id="backToHome">◀</button>
-        <div class="title">Messages</div>
-        <div style="width:64px"></div>
-      </div>
-      <div class="messages" id="threadList"></div>
-    </div>
-  </section>
-
-  <!-- CHAT -->
-  <section class="screen" id="chat">
-    <div class="glass">
-      <div class="nav">
-        <button class="btn" id="backToInbox">◀</button>
-        <div class="title" id="chatTitle">Chat</div>
-        <div class="avatar" id="chatAvatar" style="width:34px;height:34px"></div>
-      </div>
-      <div class="chat" id="chatScroll"></div>
-      <button class="next" id="btnNext">Next ▶</button>
-    </div>
-  </section>
-</div>
+    </section>
+  </div>
 
 <script>
-/* ========= CLOCK ========= */
-function fmt2(n){return n.toString().padStart(2,'0')}
-function tick(){
-  const d=new Date();
-  document.getElementById('clock').textContent = `${fmt2(d.getHours())}:${fmt2(d.getMinutes())}`;
-  document.getElementById('datepill').textContent = d.toLocaleDateString(undefined,{weekday:'short', day:'numeric', month:'short'});
-  document.getElementById('barDate').textContent = d.toLocaleDateString(undefined,{weekday:'short', day:'numeric', month:'short'});
-}
-setInterval(tick,1000); tick();
-
-/* ========= STATE ========= */
-const SAVE_KEY='heartline-save-v2';
+/* ======= UTIL / STATE ======= */
 const $ = s => document.querySelector(s);
-const screens = { start:$('#start'), home:$('#home'), inbox:$('#inbox'), chat:$('#chat') };
-function show(id){ Object.keys(screens).forEach(k=>screens[k].classList.toggle('active', k===id)); }
-let ST = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
-ST.playerName ??= ''; ST.flags ??= {}; ST.threads ??= { maya:[], riven:[], noah:[], victor:[] }; ST.queue ??= [];
-function save(){ localStorage.setItem(SAVE_KEY, JSON.stringify(ST)); }
+const $$ = s => Array.from(document.querySelectorAll(s));
+const SCR = { start:$('#scr-start'), name:$('#scr-name'), home:$('#scr-home'), msgs:$('#scr-msgs'), chat:$('#scr-chat'), settings:$('#scr-settings') };
+const ST0 = { playerName:'', inboxOrder:['maya','riven','noah','victor'], previews:{}, threads:{}, flags:{firstRun:true, rivenUnlocked:false, noahUnlocked:false, victorUnlocked:false} };
+let ST = load();
 
-/* ========= START FLOW ========= */
-$('#btnStart').addEventListener('click', ()=> $('#nameModal').classList.add('show'));
-$('#okName').addEventListener('click', ()=>{
-  const v = ($('#playerName').value||'You').trim();
-  ST.playerName = v; save();
-  bootFirst();
-  openHome();
-});
-function bootFirst(){
-  if(ST.flags.booted) return;
-  ST.flags.booted = true;
-  ST.flags.maya = true;
-  ST.flags.riven = false;
-  ST.flags.noah = false;
-  ST.flags.victor = false;
-  // pierwsze powiadomienie Mayi
-  enqueuePreview('maya', "Hey! Guess who texted me last night? 👀");
-  save();
-}
+function save(){ localStorage.setItem('heartline_save', JSON.stringify(ST)); }
+function load(){ try{ return JSON.parse(localStorage.getItem('heartline_save'))||structuredClone(ST0);}catch{ return structuredClone(ST0);} }
+function reset(){ localStorage.removeItem('heartline_save'); ST = structuredClone(ST0); show('start'); }
 
-/* ========= HOME ========= */
-function openHome(){
-  show('home');
-  updateHomeIndicators();
-}
-function updateHomeIndicators(){
-  const hasQueue = ST.queue.length>0;
-  $('#badgeMsg').classList.toggle('hidden', !hasQueue);
-  $('#homeToast').style.display = hasQueue ? 'block' : 'none';
-  if(hasQueue){
-    const last = ST.queue[ST.queue.length-1];
-    $('#homeToast').textContent = `New message from ${cap(last.contact)} 💬`;
-  }
-}
-$('#openMessages').addEventListener('click', openInbox);
-$('#backToHome').addEventListener('click', openHome);
-
-/* ========= INBOX ========= */
-const CONTACTS = [
-  {id:'maya',   name:'Maya',   avatar:'a-maya',   flag:'maya'},
-  {id:'riven',  name:'Riven',  avatar:'a-riven',  flag:'riven'},
-  {id:'noah',   name:'Noah',   avatar:'a-noah',   flag:'noah'},
-  {id:'victor', name:'Victor', avatar:'a-victor', flag:'victor'}
-];
-function openInbox(){
-  show('inbox');
-  renderThreads();
-  // po wejściu do Messages czyścimy kolejkę badge/toast
-  ST.queue = []; save(); updateHomeIndicators();
-}
-function renderThreads(){
-  const box = $('#threadList'); box.innerHTML='';
-  CONTACTS.forEach(c=>{
-    const enabled = !!ST.flags[c.flag];
-    const row = document.createElement('div'); row.className='msg-row'; if(!enabled){ row.style.opacity=.45; row.style.pointerEvents='none'; }
-    const av = document.createElement('div'); av.className='avatar ' + c.avatar; av.textContent = enabled?'':c.name[0];
-    const info = document.createElement('div');
-    const who = document.createElement('div'); who.className='who'; who.textContent = c.name;
-    const prev = document.createElement('div'); prev.className='prev'; prev.textContent = getPreview(c.id, enabled);
-    info.append(who, prev);
-    row.append(av, info);
-    row.addEventListener('click', ()=> openChat(c.id));
-    box.append(row);
-  });
-}
-function getPreview(id, enabled){
-  if(!enabled) return 'Locked';
-  const t = ST.threads[id]; if(!t || t.length===0) return 'Tap to open';
-  const last = t[t.length-1];
-  if(last.choices) return last.choices.map(x=>x.text).join(' / ');
-  return last.text || '';
-}
-function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
-
-/* ========= CHAT ENGINE ========= */
-let current=''; let cursor=0; let lockChoices=false;
-
-const SCENES = {
-  // SCENA 1: MAYA intro
-  maya_s1: [
-    { from:'maya', text:"Hey! Guess who texted me last night? 👀" },
-    { choices:[
-      { text:"Tell me already!", next:2 },
-      { text:"Let me guess… Riven?", next:2 },
-      { text:"You're glowing, Maya 😏", next:2 },
-    ]},
-    { from:'maya', text:"Riven." },
-    { from:'maya', text:"He asked if I'm still in town. Should I answer?" },
-    { choices:[
-      { text:"Your call. But be careful.", next:5 },
-      { text:"Ignore him.", next:5 },
-      { text:"Ask why now.", next:5 },
-    ]},
-    { from:'maya', text:"...I did. And he asked about you." },
-    { from:'maya', text:"I'll tell him you're around. Brace yourself." },
-    { sys: ()=> { ST.flags.riven = true; save(); } },
-    { sys: ()=> enqueuePreview('riven', "…Are you there?") },
-    { from:'maya', text:"Okay, I have class — text me later!" },
-  ],
-  // Riven (część sceny 1)
-  riven_s1: [
-    { from:'riven', text:"…Are you there?" },
-    { from:'riven', text:"Maya said you're still in town." },
-    { from:'riven', text:"Do you ever think about… that night?" },
-    { choices:[
-      { text:"I don't sleep much lately.", next:4 },
-      { text:"It was a mistake.", next:4 },
-      { text:"Why text me now?", next:4 },
-    ]},
-    { from:'riven', text:"Figures. You used to text me at 2AM just to send memes." },
-    { from:'riven', text:"If you want answers, meet me at the riverside tonight." },
-    // 🔧 KONIEC S1: wymuś nową wiadomość od Mayi (SCENA 2) i pokaż badge/toast od razu
-    { sys: ()=> { ST.flags.ch1_s1_done = true; save(); } },
-    { sys: ()=> enqueuePreview('maya', "Okay, listen… I think he's hiding something.") },
-  ],
-  // SCENA 2: MAYA follow-up → odblokowuje Noaha
-  maya_s2: [
-    { from:'maya', text:"Hey. I need to tell you something." },
-    { from:'maya', text:"Riven wasn't the only one who asked about you." },
-    { from:'maya', text:"Noah did, too. He said he missed your coffee talks." },
-    { choices:[
-      { text:"I missed them too.", next:4 },
-      { text:"I don't know what I want.", next:4 },
-      { text:"He was always kind.", next:4 },
-    ]},
-    { from:'maya', text:"I'll send him your number again, okay?" },
-    { sys: ()=> { ST.flags.noah = true; save(); } },
-    { sys: ()=> enqueuePreview('noah', "Hey! It’s been ages!") },
-    { from:'maya', text:"Be nice to him. He’s sunshine, you know?" },
-    { sys: ()=> { ST.flags.ch1_s2_done = true; save(); } },
-  ],
-  // „idle” (gdy scena 1 i 2 już są zrobione)
-  maya_idle: [
-    { from:'maya', text:"Drink water, bestie. And text me later. 🌸" }
-  ],
-  noah_s1: [
-    { from:'noah', text:"Hey! It's been ages!" },
-    { from:'noah', text:"Maya told me you're back. Coffee?" }
-  ]
-};
-
-function selectScript(id){
-  if(id==='maya'){
-    if(!ST.flags.ch1_s1_done) return SCENES.maya_s1;
-    if(ST.flags.ch1_s1_done && !ST.flags.ch1_s2_done) return SCENES.maya_s2;
-    return SCENES.maya_idle;
-  }
-  if(id==='riven') return SCENES.riven_s1;
-  if(id==='noah')  return SCENES.noah_s1;
-  return [];
-}
-
-function openChat(id){
-  current = id; cursor = 0; lockChoices=false;
-  show('chat');
-  document.getElementById('chatTitle').textContent = cap(id);
-  const av = document.getElementById('chatAvatar');
-  av.className = 'avatar a-' + id;
-
-  const sc = document.getElementById('chatScroll');
-  sc.innerHTML='';
-  // odtwórz historię
-  (ST.threads[id]||[]).forEach(m => appendBubble(m));
-  // i kontynuuj scenę
-  paintNext();
-  document.getElementById('backToInbox').onclick = ()=> { show('inbox'); renderThreads(); };
-}
-
-function appendBubble(msg){
-  const sc = document.getElementById('chatScroll');
-  const b = document.createElement('div'); b.className = 'bubble' + (msg.me?' me':'');
-  if(!msg.me && msg.from){ const f=document.createElement('div'); f.className='from'; f.textContent = cap(msg.from); b.append(f); }
-  const t = document.createElement('div'); t.textContent = msg.text; b.append(t);
-  sc.append(b); sc.scrollTop = sc.scrollHeight;
-}
-
-function pushHistory(part){
-  ST.threads[current] ||= [];
-  ST.threads[current].push(part);
-  save();
-}
-
-function clearChoiceWidgets(){
-  document.querySelectorAll('.choices').forEach(n=>n.remove());
-}
-
-function paintNext(){
-  clearChoiceWidgets();
-  const script = selectScript(current);
-  if(cursor>=script.length){ document.getElementById('btnNext').disabled=true; return; }
-  const node = script[cursor++];
-
-  // system step
-  if(node.sys){ node.sys(); updateHomeIndicators(); return paintNext(); }
-
-  // choices
-  if(node.choices){
-    const wrap = document.createElement('div'); wrap.className='choices';
-    node.choices.forEach(ch=>{
-      const btn = document.createElement('button'); btn.className='choice'; btn.textContent = ch.text;
-      btn.onclick = ()=>{
-        if(lockChoices) return; lockChoices=true;
-        const meMsg = { me:true, text: ch.text };
-        pushHistory(meMsg); appendBubble(meMsg);
-        if(typeof ch.next === 'number') cursor = ch.next;
-        lockChoices=false; paintNext();
-      };
-      wrap.append(btn);
-    });
-    document.getElementById('chatScroll').append(wrap);
-    document.getElementById('btnNext').disabled=true;
-    // zapisz fakt pokazania wyborów (dla podglądu w inboxie)
-    pushHistory({ choices: node.choices });
+function show(id){
+  $$('.screen').forEach(sc=>sc.classList.remove('active'));
+  if(id==='start'){ SCR.start.classList.add('active'); return; }
+  if(id==='name'){
+    SCR.name.classList.add('active');
+    $('#nameDlg').showModal();
     return;
   }
-
-  // normal line
-  const line = { from: node.from, text: node.text, me: !!node.me };
-  pushHistory(line); appendBubble(line);
-  document.getElementById('btnNext').disabled=false;
+  document.body.offsetHeight; // reflow
+  SCR[id].classList.add('active');
+  if(id==='home'){ renderHome(); }
+  if(id==='msgs'){ renderThreads(); }
 }
 
-document.getElementById('btnNext').addEventListener('click', paintNext);
+function timeTick(){
+  const now = new Date();
+  const h = now.getHours().toString().padStart(2,'0');
+  const m = now.getMinutes().toString().padStart(2,'0');
+  $('#sb-time').textContent = `${h}:${m}`;
+  $('#sb-date').textContent = now.toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'short'});
+}
+setInterval(timeTick, 1000); timeTick();
 
-/* ========= PREVIEWS / BADGE ========= */
-function enqueuePreview(contactId, preview){
-  // kontaktId: 'maya' | 'riven' | 'noah' | 'victor'
-  ST.queue.push({ contact: contactId, preview }); save();
-  // natychmiast pokaż toast/badge jeśli user jest na HOME
-  if(screens.home.classList.contains('active')) updateHomeIndicators();
+/* ======= START FLOW ======= */
+$('#btnStart').onclick = ()=>{ ST.flags.firstRun=false; save(); show('name'); };
+
+$('#okName').onclick = ()=>{
+  const v = $('#inpName').value.trim();
+  if(!v){ $('#inpName').focus(); return; }
+  ST.playerName = v; save(); $('#nameDlg').close(); startChapter1();
+};
+$('#cancelName').onclick = ()=>{ $('#nameDlg').close(); startChapter1(); };
+
+function boot(){
+  // try to use sakura image, else gradient stays
+  const img = new Image();
+  img.onload = ()=>{ SCR.home.style.backgroundImage = `linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.90)), url('assets/sakura-closeup.jpg')`; };
+  img.src = 'assets/sakura-closeup.jpg';
+
+  if(ST.flags.firstRun){ show('start'); }
+  else { show('home'); }
+}
+document.addEventListener('DOMContentLoaded', boot);
+
+/* ======= HOME ======= */
+function renderHome(){
+  // badge if new Maya message flagged
+  $('#i-badge').style.display = (ST.previews['maya'] && !ST.threads['maya']?.seen)?'inline-block':'none';
 }
 
-/* ========= INIT ========= */
-(function init(){
-  // od razu pokazuj START (żeby nie „znikał”)
-  Object.values(screens).forEach(s=>s.classList.remove('active'));
-  screens.start.classList.add('active');
-})();
+$('.home').addEventListener('click', (e)=>{
+  const box = e.target.closest('.app');
+  if(!box) return;
+  const to = box.dataset.open;
+  if(to==='messages'){ show('msgs'); }
+  if(to==='settings'){ show('settings'); }
+});
+$('#back1').onclick = ()=>show('home');
+$('#back2').onclick = ()=>{ show('msgs'); };
+$('#back3').onclick = ()=>show('home');
+$('#btnReset').onclick = ()=>{ if(confirm('Reset all progress?')) reset(); };
+
+/* ======= INBOX RENDER ======= */
+function renderThreads(){
+  // ensure presence of default threads
+  const T = ST.threads;
+  ST.inboxOrder.forEach(id=>{ if(!T[id]) T[id]=[]; });
+  // gate: locking
+  const rows = ST.inboxOrder.map(id=>{
+    const locked = (id==='riven' && !ST.flags.rivenUnlocked) || (id==='noah' && !ST.flags.noahUnlocked) || (id==='victor' && !ST.flags.victorUnlocked);
+    const avCls = {maya:'m', riven:'r', noah:'n', victor:'v'}[id];
+    const name = cap(id);
+    const prev = ST.previews[id] || (locked?'Locked':(T[id].length?T[id][T[id].length-1].text:''));
+    return `
+      <div class="thread" data-id="${id}" ${locked?'data-locked="1"':''}>
+        <div class="av ${avCls}">${name[0]}</div>
+        <div class="meta">
+          <div class="tit">${name}</div>
+          <div class="sub">${locked?'<span class="lock">Locked</span>':escape(prev)}</div>
+        </div>
+      </div>`;
+  }).join('');
+  $('#threads').innerHTML = rows;
+
+  // handle new Maya message queued by flags
+  if(ST.flags.newMayaMsg){
+    const t = ST.threads['maya']||[];
+    t.push({from:'maya', text:"Okay, listen… I think he's hiding something."});
+    ST.threads['maya']=t;
+    ST.previews['maya']="Okay, listen… I think he's hiding something.";
+    delete ST.flags.newMayaMsg;
+    save();
+  }
+
+  // open
+  $$('#threads .thread').forEach(row=>{
+    row.onclick = ()=>{
+      if(row.dataset.locked) return;
+      openChat(row.dataset.id);
+    };
+  });
+}
+
+/* ======= CHAT ENGINE ======= */
+const CHAT = $('#msgs'), CHO = $('#choices'), NXT = $('#btnNext');
+let curId=null, curSeq=null, curPtr=0;
+
+function openChat(id){
+  curId=id; $('#chatTitle').textContent = cap(id);
+  CHAT.innerHTML=''; CHO.innerHTML=''; NXT.style.display='none';
+  show('chat');
+
+  // decide what to run:
+  if(id==='maya' && !ST.flags.mayaSceneDone){ curSeq = Scenes.mayaIntro; }
+  else if(id==='riven' && !ST.flags.rivenSceneDone){ curSeq = Scenes.rivenM1; }
+  else if(id==='maya' && ST.flags.rivenSceneDone && !ST.flags.mayaScene2Done){ curSeq = Scenes.mayaScene2; }
+  else { curSeq = []; } // free chat after scenes
+
+  curPtr=0;
+  if(curSeq.length) step();
+  else renderHistoryOnly(id);
+}
+
+function renderHistoryOnly(id){
+  CHAT.innerHTML='';
+  const hist = ST.threads[id]||[];
+  hist.forEach(m=>appendBubble(m.from, m.text));
+  CHO.innerHTML=''; NXT.style.display='none';
+}
+
+function appendBubble(from, text){
+  const b = document.createElement('div');
+  b.className = 'bubble'+(from==='you'?' me':'');
+  b.innerHTML = `<div class="who">${from==='you'?'You':cap(from)}</div>${escape(text)}`;
+  CHAT.appendChild(b);
+  CHAT.scrollTop = CHAT.scrollHeight;
+}
+
+// engine step
+function step(){
+  const node = curSeq[curPtr++];
+  if(!node){ endSeq(); return; }
+  if(node.from){ // message
+    appendBubble(node.from, node.text.replaceAll('{name}', ST.playerName||'You'));
+    // push to history
+    const t = ST.threads[curId]||([]);
+    t.push({from:node.from, text:node.text.replaceAll('{name}', ST.playerName||'You')});
+    ST.threads[curId]=t; save();
+    step(); // chain messages without waiting
+    return;
+  }
+  if(node.choices){
+    CHO.innerHTML = '';
+    node.choices.forEach(ch=>{
+      const btn = document.createElement('button');
+      btn.className='choice';
+      btn.textContent = ch.text;
+      btn.onclick = ()=>{ appendBubble('you', ch.text); if(ch.aff){ ST.aff = ST.aff||{}; ST.aff[curId]=(ST.aff[curId]||0)+ch.aff; save(); } curSeq = ch.then; curPtr=0; step(); };
+      CHO.appendChild(btn);
+    });
+    return;
+  }
+  if(node.next){ NXT.style.display='block'; NXT.onclick=()=>{ NXT.style.display='none'; step(); }; return; }
+  if(node.sys){ node.sys(); step(); return; }
+}
+
+function endSeq(){
+  CHO.innerHTML=''; NXT.style.display='none';
+  // mark scene flags
+  if(curSeq===Scenes.mayaIntro){ ST.flags.mayaSceneDone=true; ST.flags.rivenUnlocked=true; ST.previews['maya']="Okay, I have class — text me later!"; save(); }
+  if(curSeq===Scenes.rivenM1){
+    ST.flags.rivenSceneDone=true;
+    ST.previews['riven']="If you want answers, meet me at the riverside tonight.";
+    // *** FIX: queue new Maya message + force preview update
+    ST.flags.newMayaMsg = true;
+    save();
+    toast('New message from Maya 💬');
+  }
+  if(curSeq===Scenes.mayaScene2){ ST.flags.mayaScene2Done=true; ST.flags.noahUnlocked=true; ST.previews['maya']="We’re meeting him tonight… be careful."; save(); }
+
+  renderThreads();
+}
+
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function escape(s){ return s.replace(/[&<>]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c])); }
+function toast(t){
+  const el = $('#toast'); el.innerHTML=t; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 1800);
+}
+
+/* ======= SCENES ======= */
+const Scenes = {
+  /* Scene 1A — Maya opens */
+  mayaIntro: [
+    { from:'maya', text:"Hey! Guess who texted me last night? 👀" },
+    { choices:[
+      { text:"Tell me already!", then:[ {from:'maya', text:"Riven."} ] },
+      { text:"Let me guess… Riven?", then:[ {from:'maya', text:"...you know me too well."} ] },
+      { text:"You're glowing, Maya 😌", then:[ {from:'maya', text:"Stoppp, I'm not! (maybe a little)"} ] },
+    ]},
+    { from:'maya', text:"He wants to talk. Should I?" },
+    { choices:[
+      { text:"Go hear him out.", aff:+1, then:[ {from:'maya', text:"Okay… I'll text you after class."} ] },
+      { text:"Be careful.", aff:+1, then:[ {from:'maya', text:"Promise. I’ll keep you posted."} ] },
+      { text:"Ignore him.", aff:-1, then:[ {from:'maya', text:"I… I can’t. Not yet."} ] },
+    ]},
+    { sys: ()=>{ ST.previews['maya']="Okay, I have class — text me later!"; save(); } },
+  ],
+
+  /* Scene 1B — Riven first contact */
+  rivenM1: [
+    { from:'riven', text:"…Are you there?" },
+    { choices:[
+      { text:"(Don't reply)", then:[
+        {from:'riven', text:"…yeah. I probably deserve the silence."}
+      ]},
+      { text:"What do you want, Riven?", then:[
+        {from:'riven', text:"Answers. And maybe a chance."}
+      ]},
+      { text:"You shouldn’t text me.", then:[
+        {from:'riven', text:"Figures. You used to text me at 2AM just to send memes."}
+      ]},
+    ]},
+    { from:'riven', text:"Maya said you’re still in town." },
+    { from:'riven', text:"Do you ever think about… that night?" },
+    { choices:[
+      { text:"I don't sleep much lately.", then:[ {from:'riven', text:"Meet me by the riverside. Tonight."} ] },
+      { text:"No. And neither should you.", then:[ {from:'riven', text:"Then give me one chance to make it right."} ] },
+      { text:"…Maybe.", then:[ {from:'riven', text:"7 PM. Same place."} ] },
+    ]},
+    { sys: ()=>{ ST.previews['riven']="If you want answers, meet me at the riverside tonight."; } },
+  ],
+
+  /* Scene 2 — Maya after Riven chat (unlocks Noah) */
+  mayaScene2: [
+    { from:'maya', text:"Okay, listen… I think he's hiding something." },
+    { from:'maya', text:"If you meet him, I’m coming too. Deal?" },
+    { choices:[
+      { text:"Deal. We stick together.", aff:+1, then:[ {from:'maya', text:"Good. I’ll bring snacks. Serious ambush prep."} ] },
+      { text:"I’ll handle it alone.", aff:-1, then:[ {from:'maya', text:"…Text me if anything feels off, okay?"} ] },
+    ]},
+    { from:'maya', text:"Also… remember Noah from the café? He asked for your number. I *might* have said yes." },
+    { sys: ()=>{ ST.previews['maya']="We’re meeting him tonight… be careful."; ST.flags.noahUnlocked=true; save(); } },
+  ],
+};
+
+/* ======= START CHAPTER 1 ======= */
+function startChapter1(){
+  // seed previews if fresh
+  if(!ST.previews['maya']) ST.previews['maya'] = "Hey! Guess who texted me last night? 👀";
+  save();
+  show('home');
+  // show toast for first message
+  $('#i-badge').style.display='inline-block';
+  toast('New message from Maya 💬');
+}
+
+/* ======= OPEN FROM INBOX BADGE ======= */
+$('#threads').addEventListener('click', e=>{
+  const row = e.target.closest('.thread');
+  if(!row) return;
+});
+
+/* ======= STARTUP GUARD ======= */
+window.addEventListener('load', ()=>{
+  // if returning user and already past start
+  if(!ST.flags.firstRun){ show('home'); }
+});
 </script>
 </body>
 </html>
