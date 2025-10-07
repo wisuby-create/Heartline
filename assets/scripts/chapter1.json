@@ -50,6 +50,12 @@
       ]
     },
 
+    completeScene('ch1_s1_done', {
+  from: 'Maya',
+  preview: "Okay, listen… I think he’s hiding something.",
+  contactId: 'Maya'
+});
+
     "s2": {
       "type": "unlock",
       "unlockContact": "Riven",
